@@ -20,6 +20,8 @@ Launchpad.clearAll = function() {
 	}
 }
 
+let metroPos
+
 WebMidi.enable((err) => {
 	if(err) {
 		console.log("Unable to start WebMidi: " + err)
@@ -41,7 +43,7 @@ WebMidi.enable((err) => {
 		Tone.Transport.bpm.value = 60
 
 		// tone.js loop
-		let metroPos = 1
+		metroPos = 1
 		Tone.Transport.scheduleRepeat((time) => {
 			Launchpad.padOff(metroPos > 1 ? metroPos - 1 : 8, 9, 3)
 			Launchpad.padOn(metroPos, 9, 3)
@@ -51,25 +53,76 @@ WebMidi.enable((err) => {
 			}
 		}, "8n")
 
-		Tone.Transport.scheduleRepeat((time) => {
-			for(let i = 1; i <= 8; i += 1){
-				for(let j = 1; j <= 8; j += 1){
-					Launchpad.padOn(i, j, Math.floor(Math.random()*(127-1+1)+1))
-				}
-			}
-		}, "8n")
+		// Tone.Transport.scheduleRepeat((time) => {
+		// 	for(let i = 1; i <= 8; i += 1){
+		// 		for(let j = 1; j <= 8; j += 1){
+		// 			Launchpad.padOn(i, j, Math.floor(Math.random()*(127-1+1)+1))
+		// 		}
+		// 	}
+		// }, "8n")
 
 		Tone.Transport.start()
 
-		let pattern = []
+		let sequence = new SequencePattern()
 
 		Launchpad.input.on("noteon", "all", (event) => {
-			console.log("Column: " + (event.note.number % 10))
-			console.log("Row: " + parseInt(event.note.number / 10))
+			let column =  event.note.number % 10
+			let row = parseInt(event.note.number / 10)
+
+			// root note: A4
+			sequence.addNote(Tone.Frequency("A4").transpose(row - 1), column)
 		})
 	}
 }, true)
 
 window.onbeforeunload = function() {
 	Launchpad.clearAll()
+}
+
+class Pattern {
+	constructor() {
+		this.instrument = null
+	}
+
+	addNote(note, position) {
+
+	}
+
+	removeNote(note, position) {
+
+	}
+}
+
+class SequencePattern extends Pattern{
+	constructor() {
+		super()
+		this.instrument = new Tone.Synth().toMaster()
+		this.sequence = []
+
+		Tone.Transport.scheduleRepeat((time) => {
+			console.log(this.sequence[metroPos])
+
+			for(let note in this.sequence[metroPos]) {
+				this.instrument.triggerAttackRelease(note, "8n")
+			}
+		}, "8n")
+	}
+
+	addNote(note, position) {
+		if(typeof this.sequence[position] === "undefined") {
+			this.sequence[position] = {}
+		}
+		this.sequence[position][note.toNote()] = note
+
+		let noteRow = note.toMidi() - Tone.Frequency("A4").toMidi() + 1
+
+		Launchpad.padOn(noteRow, position, 45)
+
+		console.log(position)
+		console.log(note)
+	}
+
+	removeNote(note, position) {
+
+	}
 }
