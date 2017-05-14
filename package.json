@@ -1,0 +1,16 @@
+{
+  "name": "launchtest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^1.6.7",
+    "tone": "^0.10.0",
+    "webmidi": "^2.0.0-rc.5"
+  }
+}
