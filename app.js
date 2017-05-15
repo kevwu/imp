@@ -45,12 +45,13 @@ WebMidi.enable((err) => {
 		// tone.js loop
 		metroPos = 1
 		Tone.Transport.scheduleRepeat((time) => {
-			Launchpad.padOff(metroPos > 1 ? metroPos - 1 : 8, 9, 3)
-			Launchpad.padOn(metroPos, 9, 3)
 			metroPos += 1
 			if(metroPos > 8) {
 				metroPos = 1
 			}
+			console.log(metroPos)
+			Launchpad.padOff(metroPos > 1 ? metroPos - 1 : 8, 9, 3)
+			Launchpad.padOn(metroPos, 9, 3)
 		}, "8n")
 
 		// Tone.Transport.scheduleRepeat((time) => {
@@ -106,6 +107,10 @@ class SequencePattern extends Pattern{
 				this.instrument.triggerAttackRelease(note, "8n")
 			}
 		}, "8n")
+
+		// TODO add all listeners required by this type of pattern
+
+		// TODO allow for arbitrary length patterns
 	}
 
 	addNote(note, position) {
