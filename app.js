@@ -26,9 +26,9 @@ WebMidi.enable((err) => {
 			if(metroPos > 8) {
 				metroPos = 1
 			}
-			console.log(metroPos)
-			Launchpad.setPad(metroPos > 1 ? metroPos - 1 : 8, 9, "off", 3)
-			Launchpad.setPad(metroPos, 9, "on", 3)
+			// console.log(metroPos)
+			// Launchpad.setPad(metroPos > 1 ? metroPos - 1 : 8, 9, 3, "off")
+			// Launchpad.setPad(metroPos, 9, 3, "on")
 		}, "8n")
 
 		// Tone.Transport.scheduleRepeat((time) => {
@@ -79,7 +79,7 @@ class SequencePattern extends Pattern{
 		this.sequence = []
 
 		Tone.Transport.scheduleRepeat((time) => {
-			console.log(this.sequence[metroPos])
+			// console.log(this.sequence[metroPos])
 
 			for(let note in this.sequence[metroPos]) {
 				this.instrument.triggerAttackRelease(note, "8n")
@@ -88,13 +88,21 @@ class SequencePattern extends Pattern{
 	}
 
 	activate() {
-		Launchpad.input.on("noteon", "all", (event) => {
-			let column =  event.note.number % 10
-			let row = parseInt(event.note.number / 10)
+		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+			console.log("Note on handler")
 
 			// root note: A4
-			sequence.toggleNote(Tone.Frequency("A4").transpose(row - 1), column)
+			// sequence.toggleNote(Tone.Frequency("A4").transpose(row - 1), col)
 		})
+
+		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
+			console.log("Note off handler")
+		})
+
+	}
+
+	deactivate() {
+		Launchpad.off("noteoff", this.onHandlerId)
 	}
 
 	toggleNote(note, position) {
@@ -107,7 +115,7 @@ class SequencePattern extends Pattern{
 
 		Launchpad.setPad(noteRow, position, "pulse", 45)
 
-		console.log(position)
-		console.log(note)
+		// console.log(position)
+		// console.log(note)
 	}
 }

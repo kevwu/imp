@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "electron": "^1.6.7",
+    "shortid": "^2.2.8",
     "tone": "^0.10.0",
     "webmidi": "^2.0.0-rc.5"
   }
