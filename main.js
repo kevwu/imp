@@ -2,24 +2,24 @@ const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
 
-let win
+let window
 
 function createWindow () {
 	// Create the browser window.
-	win = new BrowserWindow({width: 800, height: 600})
+	window = new BrowserWindow({frame: false})
 
 	// and load the index.html of the app.
-	win.loadURL(url.format({
+	window.loadURL(url.format({
 		pathname: path.join(__dirname, 'index.html'),
 		protocol: 'file:',
 		slashes: true
 	}))
 
 	// Open the DevTools.
-	win.webContents.openDevTools()
+	window.webContents.openDevTools()
 
-	win.on('closed', () => {
-		win = null
+	window.on('closed', () => {
+		window = null
 	})
 }
 
@@ -32,7 +32,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-	if (win === null) {
+	if (window === null) {
 		createWindow()
 	}
 })
