@@ -1,66 +1,17 @@
 let Tone = require("tone")
 let WebMidi = require("webmidi")
 
-let Launchpad = {}
-
-Launchpad.setPad = function(row, col, state, color=0) {
-	if(row > 9 || row < 1 || col > 9 || col < 1) {
-		console.log("Invalid row/col: " + row + "," + col)
-		return
-	}
-	// the Launchpad uses three channels for different states of lights
-	let channel = 0
-
-	switch(state) {
-		case "on":
-			channel = 1;
-			break;
-		case "flash":
-			channel = 2;
-			break;
-		case "pulse":
-			channel = 3;
-			break;
-		case "off":
-			channel = "all"
-			color = 0;
-			break;
-		default:
-			console.log("Invalid state: " + state)
-			return
-	}
-
-	// the top row of round buttons is handled differently
-	if(row === 9) {
-		Launchpad.output.sendControlChange(col + 103, color, channel)
-	} else {
-		let note = (10 * row) + col;
-		this.output.playNote((10 * row) + col, channel, {
-			rawVelocity: true,
-			velocity: color
-		})
-	}
-}
-
-Launchpad.clearAll = function() {
-	for(let i = 0; i < 128; i += 1) {
-		Launchpad.output.stopNote(i)
-	}
-
-	// clear top buttons
-	for(let i = 104; i <= 111; i += 1) {
-		Launchpad.output.sendControlChange(i, 0, "all")
-	}
-}
-
+let Launchpad
 let metroPos
 
 WebMidi.enable((err) => {
 	if(err) {
 		console.log("Unable to start WebMidi: " + err)
 	} else {
-		Launchpad.output = WebMidi.getOutputByName("Launchpad MK2 MIDI 1")
-		Launchpad.input = WebMidi.getInputByName("Launchpad MK2 MIDI 1")
+		Launchpad = new(require("./Launchpad"))(
+			WebMidi.getOutputByName("Launchpad MK2 MIDI 1"),
+			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
+		)
 
 		console.log(Launchpad)
 
@@ -134,10 +85,6 @@ class SequencePattern extends Pattern{
 				this.instrument.triggerAttackRelease(note, "8n")
 			}
 		}, "8n")
-
-		// TODO add all listeners required by this type of pattern
-
-		// TODO allow for arbitrary length patterns
 	}
 
 	activate() {
