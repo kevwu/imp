@@ -2,7 +2,7 @@ let Tone = require("tone")
 let WebMidi = require("webmidi")
 
 let Launchpad
-let metroPos
+let metronomePos
 
 WebMidi.enable((err) => {
 	if(err) {
@@ -13,31 +13,18 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		console.log(Launchpad)
-
-		Launchpad.clearAll()
-
 		Tone.Transport.bpm.value = 60
 
-		// tone.js loop
-		metroPos = 1
+		// metronome loop
+		// the metronome counts on [0,31].
+		metronomePos = 1
 		Tone.Transport.scheduleRepeat((time) => {
-			metroPos += 1
-			if(metroPos > 8) {
-				metroPos = 1
+			metronomePos += 1
+			if(metronomePos > 32) {
+				metronomePos = 1
 			}
-			// console.log(metroPos)
-			// Launchpad.setPad(metroPos > 1 ? metroPos - 1 : 8, 9, 3, "off")
-			// Launchpad.setPad(metroPos, 9, 3, "on")
-		}, "8n")
+		}, "32n")
 
-		// Tone.Transport.scheduleRepeat((time) => {
-		// 	for(let i = 1; i <= 9; i += 1){
-		// 		for(let j = 1; j <= 9; j += 1){
-		// 			Launchpad.setPad(i, j, "on", Math.floor(Math.random()*(127-1+1)+1))
-		// 		}
-		// 	}
-		// }, "8n")
 
 		Tone.Transport.start()
 
@@ -51,23 +38,30 @@ window.onbeforeunload = function() {
 }
 
 class Pattern {
+	// when pattern is added
 	constructor() {
 		this.instrument = null
 	}
 
+	// when pattern is switched into
+	// bind event handlers, render previous state to Launchpad, etc
 	activate() {
 
 	}
 
-	addNote(note, position) {
+	// runs when switching away from pattern
+	// clear event handlers, reset Launchpad, etc
+	deactivate() {
 
 	}
 
-	removeNote(note, position) {
+	// start up the pattern (usually quantized)
+	play() {
 
 	}
 
-	toggleNote(note, position) {
+	// stop the pattern (usually quantized)
+	stop() {
 
 	}
 }
@@ -78,31 +72,60 @@ class SequencePattern extends Pattern{
 		this.instrument = new Tone.Synth().toMaster()
 		this.sequence = []
 
-		Tone.Transport.scheduleRepeat((time) => {
-			// console.log(this.sequence[metroPos])
+		this.releaseTime = "16n"
+		// eventually this can be set from higher, e.g. at the project level
+		this.baseNote = Tone.Frequency("A4")
 
-			for(let note in this.sequence[metroPos]) {
-				this.instrument.triggerAttackRelease(note, "8n")
-			}
-		}, "8n")
+		this.view = {}
+
+		// what section of the pattern the LP is currently focusing on (in 32n)
+		this.view.positionOffset = 0
+		// note shift up/down relative to the base note
+		this.view.noteOffset = 0
+		// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
+		// this is turned into Tone's representaiton of a note
+		// just use 4 for 4n, 8 for 8n, etc.
+		this.view.noteZoom = 8
+
+		// the note value, relative to the baseNote,
+		this.part = new Tone.Part((time, note) => {
+			this.instrument.triggerAttackRelease(note, this.releaseTime)
+		})
 	}
 
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
-			console.log("Note on handler")
+			// get note from row
+			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
 
-			// root note: A4
-			// sequence.toggleNote(Tone.Frequency("A4").transpose(row - 1), col)
+			// get position from col
+			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
+
+			console.log("Note: " + note.toNote())
+			console.log("Position: " + time)
+
+
+			if(this.part.at(time) === null) {
+				this.part.at(time, note)
+				Launchpad.setPad(row, col, "on", 49)
+			} else {
+				this.part.remove(time)
+				Launchpad.setPad(row, col, "off")
+			}
+
+			console.log(this.part.at(time))
 		})
 
 		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
-			console.log("Note off handler")
+			// console.log("Note off handler")
 		})
 
 	}
 
 	deactivate() {
-		Launchpad.off("noteoff", this.onHandlerId)
+		// remove event handlers
+		Launchpad.off("noteon", this.onHandlerId)
+		Launchpad.off("noteoff", this.offHandlerId)
 	}
 
 	toggleNote(note, position) {
@@ -119,3 +142,13 @@ class SequencePattern extends Pattern{
 		// console.log(note)
 	}
 }
+
+// function party() {
+// 	Tone.Transport.scheduleRepeat((time) => {
+// 		for(let i = 1; i <= 9; i += 1){
+// 			for(let j = 1; j <= 9; j += 1){
+// 				Launchpad.setPad(i, j, "on", Math.floor(Math.random()*(127-1+1)+1))
+// 			}
+// 		}
+// 	}, "8n")
+//  }

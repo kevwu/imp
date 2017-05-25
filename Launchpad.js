@@ -36,10 +36,12 @@ class Launchpad {
 				throw "Launchpad sent invalid control change message."
 			}
 		})
+
+		this.clearAll()
 	}
 
 	// simplifies setting color/state by row/col and unifies top row with the rest of the buttons
-	setPad(row, col, color = 0, state = "on") {
+	setPad(row, col, state = "on", color = 0) {
 		// row and cols go 1-9 inclusive. There is no button at (9,9).
 		if(row > 9 || row < 1 || col > 9 || col < 1 || (row === 9 && col === 9)) {
 			console.log("Invalid row/col: " + row + "," + col)
@@ -50,6 +52,7 @@ class Launchpad {
 
 		switch(state) {
 			case "on":
+			case "solid":
 				channel = 1;
 				break;
 			case "flash":
@@ -91,8 +94,6 @@ class Launchpad {
 	}
 
 	_handleNoteOn(row, col) {
-		console.log("Note on: " + row + "," + col)
-
 		for(let h in this.noteOnHandlers) {
 			let handler = this.noteOnHandlers[h]
 			if(typeof handler === "function") {
@@ -102,8 +103,6 @@ class Launchpad {
 	}
 
 	_handleNoteOff(row, col) {
-		console.log("Note off: " + row + "," + col)
-
 		for(let h in this.noteOffHandlers) {
 			let handler = this.noteOffHandlers[h]
 			if(typeof handler === "function") {
