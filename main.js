@@ -2,6 +2,8 @@ const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
 
+const env = "DEV" // "PI"
+
 let window
 
 function createWindow () {
@@ -16,11 +18,18 @@ function createWindow () {
 	}))
 
 	// Open the DevTools.
-	window.webContents.openDevTools()
+	if(env === "DEV") {
+		window.webContents.openDevTools()
+	}
 
 	window.on('closed', () => {
 		window = null
 	})
+
+	if(env === "PI") {
+		window.maximize()
+		window.setFullScreen(true)
+	}
 }
 
 app.on('ready', createWindow)
