@@ -13,17 +13,32 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		Tone.Transport.bpm.value = 60
+		Tone.Transport.bpm.value = 120
+		// Tone.Transport.loop = true
+		// Tone.Transport.loopStart = 0
+		// Tone.Transport.loopEnd = "1m"
 
 		// metronome loop
-		// the metronome counts on [0,31].
-		metronomePos = 1
+		// the metronome starts at zero and counts on [1,8].
+		metronomePos = 0
 		Tone.Transport.scheduleRepeat((time) => {
 			metronomePos += 1
-			if(metronomePos > 32) {
+			if(metronomePos > 8) {
 				metronomePos = 1
 			}
-		}, "32n")
+			for(let i = 1; i <= 8; i += 1) {
+				Launchpad.setPad(i, 9, "off")
+			}
+			Launchpad.setPad(metronomePos, 9, "on", 22)
+
+				// console.log(Tone.Transport.position)
+				// console.log(metronomePos)
+		}, "8n")
+
+		// midi clock to synchronize pulse animation
+		Tone.Transport.scheduleRepeat((time) => {
+			Launchpad.output.sendClock()
+		}, "4n / 24")
 
 
 		Tone.Transport.start()
@@ -69,10 +84,11 @@ class Pattern {
 class SequencePattern extends Pattern{
 	constructor() {
 		super()
-		this.instrument = new Tone.Synth().toMaster()
+		// synth must support polyphony
+		this.instrument = new Tone.PolySynth(6, Tone.Synth).toMaster()
 		this.sequence = []
 
-		this.releaseTime = "16n"
+		this.holdTime = "16n"
 		// eventually this can be set from higher, e.g. at the project level
 		this.baseNote = Tone.Frequency("A4")
 
@@ -88,9 +104,13 @@ class SequencePattern extends Pattern{
 		this.view.noteZoom = 8
 
 		// the note value, relative to the baseNote,
-		this.part = new Tone.Part((time, note) => {
-			this.instrument.triggerAttackRelease(note, this.releaseTime)
+		this.part = new Tone.Part((time, data) => {
+			console.log("Triggered!")
+			console.log(data)
+			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime)
 		})
+		this.part.loop = true
+		this.part.start("@1m")
 	}
 
 	activate() {
@@ -106,11 +126,35 @@ class SequencePattern extends Pattern{
 
 
 			if(this.part.at(time) === null) {
-				this.part.at(time, note)
+				// part at time doesn't exist, create it (and add the note, since that definitely did not exist)
+				console.log("Creating part.")
+				let notesObj = []
+				notesObj[note.toMidi()] = note
+				this.part.at(time, {
+					notes: notesObj,
+					hold: [this.holdTime],
+				})
 				Launchpad.setPad(row, col, "on", 49)
 			} else {
-				this.part.remove(time)
-				Launchpad.setPad(row, col, "off")
+				// part exists at this time, modify it
+				let partAtTime = this.part.at(time).value
+
+				if(!partAtTime.notes[note.toMidi()]) {
+					// note doesn't exist, add it
+					partAtTime.notes[note.toMidi()] = note
+					Launchpad.setPad(row, col, "on", 49)
+				} else {
+					// note exists, remove it
+					delete partAtTime.notes[note.toMidi()]
+					Launchpad.setPad(row, col, "off")
+
+					// if we were left with an empty array, delete the part
+					if(partAtTime.notes.length === 0) {
+						this.part.remove(time)
+					}
+				}
+
+				this.part.at(time, partAtTime)
 			}
 
 			console.log(this.part.at(time))
@@ -126,20 +170,6 @@ class SequencePattern extends Pattern{
 		// remove event handlers
 		Launchpad.off("noteon", this.onHandlerId)
 		Launchpad.off("noteoff", this.offHandlerId)
-	}
-
-	toggleNote(note, position) {
-		if(typeof this.sequence[position] === "undefined") {
-			this.sequence[position] = {}
-		}
-		this.sequence[position][note.toNote()] = note
-
-		let noteRow = note.toMidi() - Tone.Frequency("A4").toMidi() + 1
-
-		Launchpad.setPad(noteRow, position, "pulse", 45)
-
-		// console.log(position)
-		// console.log(note)
 	}
 }
 
