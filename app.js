@@ -15,7 +15,7 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		Tone.Transport.bpm.value = 120
+		Tone.Transport.bpm.value = 60
 		// Tone.Transport.loop = true
 		// Tone.Transport.loopStart = 0
 		// Tone.Transport.loopEnd = "1m"
@@ -33,7 +33,7 @@ WebMidi.enable((err) => {
 			}
 			Launchpad.setPad(metronomePos, 9, "on", 22)
 
-				// console.log(Tone.Transport.position)
+				// console.log(Tone.Transport.height)
 				// console.log(metronomePos)
 		}, "8n")
 
@@ -90,14 +90,14 @@ class SequencePattern extends Pattern{
 
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
-			if(col === 9) {
+			if(col === 9 || row === 9) {
 				return
 			}
 
 			// get note from row
 			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
 
-			// get position from col
+			// get height from col
 			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
 
 			console.log("Note: " + note.toNote())
@@ -156,30 +156,82 @@ class BouncePattern extends Pattern {
 	constructor() {
 		super()
 
-		this.notes = []
+		// each column contains a bouncing note
+		this.columns = []
 
 		// left/right offset
 		this.view = {}
 		this.view.positionOffset = 0
 
 		this.tick =  new Tone.Loop((time) => {
+			for(let col in this.columns) {
+				col = parseInt(col)
+				let bouncer = this.columns[col]
 
-		}, "16n").start(0)
+				// clear current height
+				Launchpad.setPad(bouncer.height, (parseInt(col) + parseInt(this.view.positionOffset)), "off")
+
+				let color = 29
+
+				// very messy, looks like an 8 year old wrote it
+				if(bouncer.falling) {
+					if(bouncer.height === 1) {
+						bouncer.falling = false
+						bouncer.height = Math.min(bouncer.height + 1, bouncer.maxHeight)
+					} else {
+						bouncer.height = Math.max(bouncer.height - 1, 1)
+					}
+				} else {
+					if(bouncer.height === bouncer.maxHeight) {
+						bouncer.falling = true
+						bouncer.height = Math.max(bouncer.height - 1, 1)
+					} else {
+						bouncer.height = Math.min(bouncer.height + 1, bouncer.maxHeight)
+					}
+				}
+
+				if(bouncer.height === 1) {
+					bouncer.instrument.triggerAttackRelease(new Tone.Frequency("A4").transpose(col), "16n")
+					color = 36
+				}
+
+				Launchpad.setPad(bouncer.height, col + this.view.positionOffset, "on", color)
+			}
+		}, "32n").start(0)
 	}
 
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+			if(row === 9 || col === 9) {
+				return
+			}
 
-		})
+			for(let i = 1; i <= 8; i += 1) {
+				Launchpad.setPad(i, col, "off")
+			}
 
-		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
+			// "true" column
+			let bounceColumn = (col + this.view.positionOffset)
 
+			// either delete or create a bouncer with period 1
+			if(row === 1 && this.columns[bounceColumn]) {
+				delete this.columns[bounceColumn]
+				return
+			}
+
+			let bouncer = {
+				maxHeight: row, // initial height is max height
+				height: row,
+				instrument: new Tone.Synth().toMaster(),
+				falling: true, // if it is not falling, it is rising
+			}
+
+			this.columns[bounceColumn] = bouncer
 		})
 	}
 
 	deactivate() {
 		Launchpad.off("noteon", this.onHandlerId)
-		Launchpad.off("noteoff", this.offHandlerId)
 	}
 }
 

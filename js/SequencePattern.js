@@ -38,7 +38,7 @@ class SequencePattern extends Pattern{
 			// get note from row
 			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
 
-			// get position from col
+			// get height from col
 			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
 
 			console.log("Note: " + note.toNote())

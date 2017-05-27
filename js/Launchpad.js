@@ -44,8 +44,7 @@ class Launchpad {
 	setPad(row, col, state = "on", color = 0) {
 		// row and cols go 1-9 inclusive. There is no button at (9,9).
 		if(row > 9 || row < 1 || col > 9 || col < 1 || (row === 9 && col === 9)) {
-			console.log("Invalid row/col: " + row + "," + col)
-			return
+			throw "Invalid row/col: " + row + "," + col
 		}
 		// the Launchpad uses three channels for different states of lights
 		let channel = 0
@@ -111,17 +110,24 @@ class Launchpad {
 		}
 	}
 
-	on(event, handler) {
-		if(event === "noteon") {
+	on(eventType, handler) {
+		if(eventType === "noteon") {
 			this.noteOnHandlers[(shortid.generate())] = handler
-		} else if(event === "noteoff") {
+		} else if(eventType === "noteoff") {
 			this.noteOffHandlers[(shortid.generate())] = handler
 		} else {
-			throw "Invalid event: " + event
+			throw "Invalid event: " + eventType
 		}
 	}
 
-	off(event, handlerId) {
+	off(eventType, eventId) {
+		if(eventType === "noteon") {
+			delete this.noteOnHandlers[eventId]
+		} else if(eventType === "noteoff") {
+			delete this.noteOffHandlers[eventId]
+		} else {
+			throw "Invalid event: " + eventType
+		}
 
 	}
 }
