@@ -47,8 +47,11 @@ WebMidi.enable((err) => {
 
 		// party()
 
-		let sequence = new SequencePattern()
-		sequence.activate()
+		// let sequence = new SequencePattern()
+		// sequence.activate()
+
+		let bounce = new BouncePattern()
+		bounce.activate()
 	}
 }, true)
 
@@ -144,6 +147,37 @@ class SequencePattern extends Pattern{
 
 	deactivate() {
 		// remove event handlers
+		Launchpad.off("noteon", this.onHandlerId)
+		Launchpad.off("noteoff", this.offHandlerId)
+	}
+}
+
+class BouncePattern extends Pattern {
+	constructor() {
+		super()
+
+		this.notes = []
+
+		// left/right offset
+		this.view = {}
+		this.view.positionOffset = 0
+
+		this.tick =  new Tone.Loop((time) => {
+
+		}, "16n").start(0)
+	}
+
+	activate() {
+		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+
+		})
+
+		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
+
+		})
+	}
+
+	deactivate() {
 		Launchpad.off("noteon", this.onHandlerId)
 		Launchpad.off("noteoff", this.offHandlerId)
 	}
