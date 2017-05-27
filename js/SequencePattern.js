@@ -1,57 +1,5 @@
 let Tone = require("tone")
-let WebMidi = require("webmidi")
-
-let Launchpad
-let metronomePos
-
-let Pattern = require("./js/Pattern")
-
-WebMidi.enable((err) => {
-	if(err) {
-		console.log("Unable to start WebMidi: " + err)
-	} else {
-		Launchpad = new(require("./js/Launchpad"))(
-			WebMidi.getOutputByName("Launchpad MK2 MIDI 1"),
-			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
-		)
-
-		Tone.Transport.bpm.value = 120
-		// Tone.Transport.loop = true
-		// Tone.Transport.loopStart = 0
-		// Tone.Transport.loopEnd = "1m"
-
-		// metronome loop
-		// the metronome starts at zero and counts on [1,8].
-		metronomePos = 0
-		Tone.Transport.scheduleRepeat((time) => {
-			metronomePos += 1
-			if(metronomePos > 8) {
-				metronomePos = 1
-			}
-			for(let i = 1; i <= 8; i += 1) {
-				Launchpad.setPad(i, 9, "off")
-			}
-			Launchpad.setPad(metronomePos, 9, "on", 22)
-
-				// console.log(Tone.Transport.position)
-				// console.log(metronomePos)
-		}, "8n")
-
-		// midi clock to synchronize pulse animation
-		Tone.Transport.scheduleRepeat((time) => {
-			Launchpad.output.sendClock()
-		}, "4n / 24")
-
-
-		Tone.Transport.start()
-
-		// party()
-
-		let sequence = new SequencePattern()
-		sequence.activate()
-	}
-}, true)
-
+let Pattern = require("./Pattern")
 
 class SequencePattern extends Pattern{
 	constructor() {
@@ -87,10 +35,6 @@ class SequencePattern extends Pattern{
 
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
-			if(col === 9) {
-				return
-			}
-
 			// get note from row
 			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
 
@@ -149,16 +93,4 @@ class SequencePattern extends Pattern{
 	}
 }
 
-window.onbeforeunload = function() {
-	Launchpad.clearAll()
-}
-
-function party() {
-	Tone.Transport.scheduleRepeat((time) => {
-		for(let i = 1; i <= 9; i += 1){
-			for(let j = 1; j <= 9; j += 1){
-				Launchpad.setPad(i, j, "on", Math.floor(Math.random()*(127-1+1)+1))
-			}
-		}
-	}, "8n")
- }
+module.exports = SequencePattern
