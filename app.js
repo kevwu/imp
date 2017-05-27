@@ -15,7 +15,7 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		Tone.Transport.bpm.value = 60
+		Tone.Transport.bpm.value = 100
 		// Tone.Transport.loop = true
 		// Tone.Transport.loopStart = 0
 		// Tone.Transport.loopEnd = "1m"
@@ -173,25 +173,14 @@ class BouncePattern extends Pattern {
 
 				let color = 29
 
-				// very messy, looks like an 8 year old wrote it
-				if(bouncer.falling) {
-					if(bouncer.height === 1) {
-						bouncer.falling = false
-						bouncer.height = Math.min(bouncer.height + 1, bouncer.maxHeight)
-					} else {
-						bouncer.height = Math.max(bouncer.height - 1, 1)
-					}
-				} else {
-					if(bouncer.height === bouncer.maxHeight) {
-						bouncer.falling = true
-						bouncer.height = Math.max(bouncer.height - 1, 1)
-					} else {
-						bouncer.height = Math.min(bouncer.height + 1, bouncer.maxHeight)
-					}
+				bouncer.height = Math.min(Math.max(bouncer.height + bouncer.direction, 1), bouncer.maxHeight);
+
+				if(bouncer.height === 1 || bouncer.height === bouncer.maxHeight) {
+					bouncer.direction *= -1
 				}
 
 				if(bouncer.height === 1) {
-					bouncer.instrument.triggerAttackRelease(new Tone.Frequency("A4").transpose(col), "16n")
+					bouncer.instrument.triggerAttackRelease(new Tone.Frequency("A4").transpose(col * 2), "16n")
 					color = 36
 				}
 
@@ -223,7 +212,7 @@ class BouncePattern extends Pattern {
 				maxHeight: row, // initial height is max height
 				height: row,
 				instrument: new Tone.Synth().toMaster(),
-				falling: true, // if it is not falling, it is rising
+				direction: -1,
 			}
 
 			this.columns[bounceColumn] = bouncer
