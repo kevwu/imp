@@ -1,5 +1,6 @@
 let Tone = require("tone")
 let WebMidi = require("webmidi")
+let Scale = require("music-scale")
 
 let Launchpad
 let metronomePos
@@ -15,7 +16,7 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		Tone.Transport.bpm.value = 100
+		Tone.Transport.bpm.value = 120
 		// Tone.Transport.loop = true
 		// Tone.Transport.loopStart = 0
 		// Tone.Transport.loopEnd = "1m"
@@ -47,11 +48,11 @@ WebMidi.enable((err) => {
 
 		// party()
 
-		// let sequence = new SequencePattern()
-		// sequence.activate()
+		let sequence = new SequencePattern()
+		sequence.activate()
 
-		let bounce = new BouncePattern()
-		bounce.activate()
+		// let bounce = new BouncePattern()
+		// bounce.activate()
 	}
 }, true)
 
@@ -63,10 +64,12 @@ class SequencePattern extends Pattern{
 		this.instrument = new Tone.PolySynth(6, Tone.Synth).toMaster()
 		this.sequence = []
 
+		// default time to hold the note before releasing. Can be overriden
 		this.holdTime = "16n"
 		// eventually this can be set from higher, e.g. at the project level
 		this.baseNote = Tone.Frequency("A4")
 
+		// view-related variables
 		this.view = {}
 
 		// what section of the pattern the LP is currently focusing on (in 32n)
@@ -80,12 +83,14 @@ class SequencePattern extends Pattern{
 
 		// the note value, relative to the baseNote,
 		this.part = new Tone.Part((time, data) => {
+			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime)
 			console.log("Triggered!")
 			console.log(data)
-			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime)
 		})
 		this.part.loop = true
 		this.part.start("@1m")
+
+		this.scaleType = "major"
 	}
 
 	activate() {
@@ -95,13 +100,10 @@ class SequencePattern extends Pattern{
 			}
 
 			// get note from row
-			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
+			let scale = Scale(this.scaleType, this.baseNote.toNote())
+			let note = new Tone.Frequency(scale[(row - 1)])
 
-			// get height from col
 			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
-
-			console.log("Note: " + note.toNote())
-			console.log("Position: " + time)
 
 
 			if(this.part.at(time) === null) {
@@ -142,7 +144,6 @@ class SequencePattern extends Pattern{
 		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
 			// console.log("Note off handler")
 		})
-
 	}
 
 	deactivate() {
