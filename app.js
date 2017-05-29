@@ -25,13 +25,14 @@ WebMidi.enable((err) => {
 		// the metronome starts at zero and counts on [1,8].
 		metronomePos = 0
 		Tone.Transport.scheduleRepeat((time) => {
+			if(metronomePos > 0) {
+				Launchpad.setPad(metronomePos, 9, "off")
+			}
 			metronomePos += 1
 			if(metronomePos > 8) {
 				metronomePos = 1
 			}
-			for(let i = 1; i <= 8; i += 1) {
-				Launchpad.setPad(i, 9, "off")
-			}
+
 			Launchpad.setPad(metronomePos, 9, "on", 22)
 
 				// console.log(Tone.Transport.height)
@@ -57,11 +58,6 @@ WebMidi.enable((err) => {
 		// let scale = new teoria.scale('A4', 'major')
 		// console.log(scale)
 		// console.log(scale.get(1).scientific())
-
-		let note = new teoria.note('Bb2')
-		console.log(note.scientific())
-		note = note.interval("P8")
-		console.log(note.scientific())
 	}
 }, true)
 
@@ -84,11 +80,8 @@ class SequencePattern extends Pattern{
 		// what section of the pattern the LP is currently focusing on (in 32n)
 		this.view.measureOffset = 0
 
-		// note shift up/down relative to the base note
-		// this.view.octaveOffset = 0
-
 		// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
-		// this is turned into Tone's representaiton of a note
+		// this is turned into Tone's representation of a note
 		// just use 4 for 4n, 8 for 8n, etc.
 		this.view.noteZoom = 8
 
@@ -96,6 +89,7 @@ class SequencePattern extends Pattern{
 			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime, time)
 		})
 		this.part.loop = true
+		this.part.loopEnd = "1 * 1m"
 		this.part.start("@1m")
 
 		this.scaleType = "major"
@@ -117,11 +111,11 @@ class SequencePattern extends Pattern{
 						break;
 					case 3:
 						// measure left
-						this.view.measureOffset = Math.max(0, this.view.measureOffset - 8)
+						this.view.measureOffset = Math.max(0, this.view.measureOffset - 1)
 						break;
 					case 4:
 						// measure right
-						this.view.measureOffset += 8
+						this.view.measureOffset += 1
 						break;
 				}
 
@@ -139,10 +133,24 @@ class SequencePattern extends Pattern{
 			// we don't need to do row-1 because teoria.scale.get() starts at 1
 			let note = scale.get(row).scientific()
 
-			let time = ((col - 1) + this.view.measureOffset) + " * " + this.view.noteZoom + "n"
+			let time = ((col - 1) + (this.view.measureOffset * this.view.noteZoom)) + " * " + this.view.noteZoom + "n"
+
+			// extend part length if necessary
+			let loopLength
+			if(this.part.loopEnd === "1m") {
+				loopLength = 1
+			} else {
+				loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
+			}
+
+			console.log(loopLength)
+			if(loopLength < this.view.measureOffset + 1) {
+				// extend part
+				console.log("Extending part.")
+				this.part.loopEnd = (this.view.measureOffset+1) + "*1m"
+			}
 
 			if(this.part.at(time) === null) { // part at time doesn't exist, create it (and add the note, since that definitely did not exist)
-				console.log("Creating part.")
 				let notesArr = []
 				notesArr[note] = note
 				this.part.at(time, {
@@ -169,8 +177,6 @@ class SequencePattern extends Pattern{
 
 				this.part.at(time, partAtTime)
 			}
-
-			console.log(this.part.at(time))
 		})
 
 		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
@@ -200,18 +206,15 @@ class SequencePattern extends Pattern{
 		let scaleNotes = scale.notes().map((note) => {
 			return note.scientific()
 		})
-		console.log(scaleNotes)
 
 		// get all events
 		for(let e in this.part._events){
 			let eventData = this.part._events[e].value
 			if(eventData.measureOffset === this.view.measureOffset) {
-				console.log(eventData.notes)
 
 				for(let n in eventData.notes) {
 					let scalePos = scaleNotes.indexOf(n)
 					if(scalePos !== -1) {
-						console.log("Note " + n + " goes at time " + eventData.measureTime + ", pitch " + (scalePos + 1))
 						Launchpad.setPad((scalePos + 1), eventData.measureTime, "on", 49)
 					}
 				}
