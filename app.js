@@ -1,6 +1,6 @@
 let Tone = require("tone")
 let WebMidi = require("webmidi")
-let Scale = require("music-scale")
+let teoria = require("teoria")
 
 let Launchpad
 let metronomePos
@@ -53,6 +53,10 @@ WebMidi.enable((err) => {
 
 		// let bounce = new BouncePattern()
 		// bounce.activate()
+
+		// let scale = new teoria.scale('A4', 'major')
+		// console.log(scale)
+		// console.log(scale.get(1).scientific())
 	}
 }, true)
 
@@ -67,15 +71,15 @@ class SequencePattern extends Pattern{
 		// default time to hold the note before releasing. Can be overriden
 		this.holdTime = "16n"
 		// eventually this can be set from higher, e.g. at the project level
-		this.baseNote = Tone.Frequency("A4")
+		this.baseNote = new teoria.note.fromString("Bb4")
 
 		// view-related variables
 		this.view = {}
 
 		// what section of the pattern the LP is currently focusing on (in 32n)
-		this.view.positionOffset = 0
+		this.view.measureOffset = 0
 		// note shift up/down relative to the base note
-		this.view.noteOffset = 0
+		this.view.octaveOffset = 0
 		// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
 		// this is turned into Tone's representaiton of a note
 		// just use 4 for 4n, 8 for 8n, etc.
@@ -83,9 +87,7 @@ class SequencePattern extends Pattern{
 
 		// the note value, relative to the baseNote,
 		this.part = new Tone.Part((time, data) => {
-			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime)
-			console.log("Triggered!")
-			console.log(data)
+			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime, time)
 		})
 		this.part.loop = true
 		this.part.start("@1m")
@@ -95,38 +97,65 @@ class SequencePattern extends Pattern{
 
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
-			if(col === 9 || row === 9) {
+			if(row === 9) {
+				switch(col) {
+					case 1:
+						// octave up
+						this.view.octaveOffset += 12
+						break;
+					case 2:
+						// octave down
+						this.view.octaveOffset -= 12
+						break;
+					case 3:
+						// measure left
+						this.view.measureOffset = Math.max(0, this.view.measureOffset - 8)
+						break;
+					case 4:
+						// measure right
+						this.view.measureOffset += 8
+						break;
+				}
+
+				this._render()
+				return
+			}
+
+			if(col === 9) {
+				// right side round buttons don't do anything yet
 				return
 			}
 
 			// get note from row
-			let scale = Scale(this.scaleType, this.baseNote.toNote())
-			let note = new Tone.Frequency(scale[(row - 1)])
+			let scale = new teoria.scale(this.baseNote, this.scaleType)
+			// we don't need to do row-1 because teoria.scale.get() starts at 1
+			let note = scale.get(row).scientific()
 
-			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
-
+			let time = ((col - 1) + this.view.measureOffset) + " * " + this.view.noteZoom + "n"
 
 			if(this.part.at(time) === null) {
 				// part at time doesn't exist, create it (and add the note, since that definitely did not exist)
 				console.log("Creating part.")
-				let notesObj = []
-				notesObj[note.toMidi()] = note
+				let notesArr = []
+				notesArr[note] = note
 				this.part.at(time, {
-					notes: notesObj,
+					notes: notesArr,
 					hold: [this.holdTime],
+					measureTime: (col - 1),
+					measureOffset: this.view.measureOffset,
 				})
 				Launchpad.setPad(row, col, "on", 49)
 			} else {
 				// part exists at this time, modify it
 				let partAtTime = this.part.at(time).value
 
-				if(!partAtTime.notes[note.toMidi()]) {
+				if(!partAtTime.notes[note]) {
 					// note doesn't exist, add it
-					partAtTime.notes[note.toMidi()] = note
+					partAtTime.notes[note] = note
 					Launchpad.setPad(row, col, "on", 49)
 				} else {
 					// note exists, remove it
-					delete partAtTime.notes[note.toMidi()]
+					delete partAtTime.notes[note]
 					Launchpad.setPad(row, col, "off")
 
 					// if we were left with an empty array, delete the part
@@ -151,6 +180,13 @@ class SequencePattern extends Pattern{
 		Launchpad.off("noteon", this.onHandlerId)
 		Launchpad.off("noteoff", this.offHandlerId)
 	}
+
+	// draw scene to Launchpad from scratch
+	_render() {
+		console.log("Render")
+		console.log("Octave: " + this.view.octaveOffset)
+		console.log("Measure: " + this.view.measureOffset)
+	}
 }
 
 class BouncePattern extends Pattern {
@@ -162,7 +198,7 @@ class BouncePattern extends Pattern {
 
 		// left/right offset
 		this.view = {}
-		this.view.positionOffset = 0
+		this.view.measureOffset = 0
 
 		this.tick =  new Tone.Loop((time) => {
 			for(let col in this.columns) {
@@ -170,7 +206,7 @@ class BouncePattern extends Pattern {
 				let bouncer = this.columns[col]
 
 				// clear current height
-				Launchpad.setPad(bouncer.height, (parseInt(col) + parseInt(this.view.positionOffset)), "off")
+				Launchpad.setPad(bouncer.height, (parseInt(col) + parseInt(this.view.measureOffset)), "off")
 
 				let color = 29
 
@@ -185,7 +221,7 @@ class BouncePattern extends Pattern {
 					color = 36
 				}
 
-				Launchpad.setPad(bouncer.height, col + this.view.positionOffset, "on", color)
+				Launchpad.setPad(bouncer.height, col + this.view.measureOffset, "on", color)
 			}
 		}, "32n").start(0)
 	}
@@ -201,7 +237,7 @@ class BouncePattern extends Pattern {
 			}
 
 			// "true" column
-			let bounceColumn = (col + this.view.positionOffset)
+			let bounceColumn = (col + this.view.measureOffset)
 
 			// either delete or create a bouncer with period 1
 			if(row === 1 && this.columns[bounceColumn]) {

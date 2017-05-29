@@ -15,9 +15,9 @@ class SequencePattern extends Pattern{
 		this.view = {}
 
 		// what section of the pattern the LP is currently focusing on (in 32n)
-		this.view.positionOffset = 0
+		this.view.measureOffset = 0
 		// note shift up/down relative to the base note
-		this.view.noteOffset = 0
+		this.view.octaveOffset = 0
 		// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
 		// this is turned into Tone's representaiton of a note
 		// just use 4 for 4n, 8 for 8n, etc.
@@ -36,10 +36,10 @@ class SequencePattern extends Pattern{
 	activate() {
 		this.onHandlerId = Launchpad.on("noteon", (row, col) => {
 			// get note from row
-			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.noteOffset, "midi")
+			let note = new Tone.Frequency((row - 1) + this.baseNote.toMidi() + this.view.octaveOffset, "midi")
 
 			// get height from col
-			let time = ((col - 1) + this.view.positionOffset) + " * " + this.view.noteZoom + "n"
+			let time = ((col - 1) + this.view.measureOffset) + " * " + this.view.noteZoom + "n"
 
 			console.log("Note: " + note.toNote())
 			console.log("Position: " + time)

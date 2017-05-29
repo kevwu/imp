@@ -27,7 +27,6 @@ class Launchpad {
 		})
 
 		this.input.addListener("controlchange", "all", (event) => {
-			console.log(event)
 			if(event.value === 0) {
 				this._handleNoteOff(9, event.controller.number - 103)
 			} else if(event.value === 127) {
