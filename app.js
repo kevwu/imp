@@ -57,6 +57,11 @@ WebMidi.enable((err) => {
 		// let scale = new teoria.scale('A4', 'major')
 		// console.log(scale)
 		// console.log(scale.get(1).scientific())
+
+		let note = new teoria.note('Bb2')
+		console.log(note.scientific())
+		note = note.interval("P8")
+		console.log(note.scientific())
 	}
 }, true)
 
@@ -78,14 +83,15 @@ class SequencePattern extends Pattern{
 
 		// what section of the pattern the LP is currently focusing on (in 32n)
 		this.view.measureOffset = 0
+
 		// note shift up/down relative to the base note
-		this.view.octaveOffset = 0
+		// this.view.octaveOffset = 0
+
 		// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
 		// this is turned into Tone's representaiton of a note
 		// just use 4 for 4n, 8 for 8n, etc.
 		this.view.noteZoom = 8
 
-		// the note value, relative to the baseNote,
 		this.part = new Tone.Part((time, data) => {
 			this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime, time)
 		})
@@ -101,11 +107,13 @@ class SequencePattern extends Pattern{
 				switch(col) {
 					case 1:
 						// octave up
-						this.view.octaveOffset += 12
+						// this.view.octaveOffset += 12
+						this.baseNote = this.baseNote.interval("P8")
 						break;
 					case 2:
 						// octave down
-						this.view.octaveOffset -= 12
+						// this.view.octaveOffset -= 12
+						this.baseNote = this.baseNote.interval("P-8")
 						break;
 					case 3:
 						// measure left
@@ -133,33 +141,28 @@ class SequencePattern extends Pattern{
 
 			let time = ((col - 1) + this.view.measureOffset) + " * " + this.view.noteZoom + "n"
 
-			if(this.part.at(time) === null) {
-				// part at time doesn't exist, create it (and add the note, since that definitely did not exist)
+			if(this.part.at(time) === null) { // part at time doesn't exist, create it (and add the note, since that definitely did not exist)
 				console.log("Creating part.")
 				let notesArr = []
 				notesArr[note] = note
 				this.part.at(time, {
 					notes: notesArr,
 					hold: [this.holdTime],
-					measureTime: (col - 1),
-					measureOffset: this.view.measureOffset,
+					measureTime: col, // position within the measure
+					measureOffset: this.view.measureOffset, // grid position
 				})
 				Launchpad.setPad(row, col, "on", 49)
-			} else {
-				// part exists at this time, modify it
+			} else { // part exists at this time, modify it
 				let partAtTime = this.part.at(time).value
 
-				if(!partAtTime.notes[note]) {
-					// note doesn't exist, add it
+				if(!partAtTime.notes[note]) { // note doesn't exist, add it
 					partAtTime.notes[note] = note
 					Launchpad.setPad(row, col, "on", 49)
-				} else {
-					// note exists, remove it
+				} else { // note exists, remove it
 					delete partAtTime.notes[note]
 					Launchpad.setPad(row, col, "off")
 
-					// if we were left with an empty array, delete the part
-					if(partAtTime.notes.length === 0) {
+					if(partAtTime.notes.length === 0) { // if we were left with an empty array, delete the part
 						this.part.remove(time)
 					}
 				}
@@ -171,7 +174,6 @@ class SequencePattern extends Pattern{
 		})
 
 		this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
-			// console.log("Note off handler")
 		})
 	}
 
@@ -184,8 +186,37 @@ class SequencePattern extends Pattern{
 	// draw scene to Launchpad from scratch
 	_render() {
 		console.log("Render")
-		console.log("Octave: " + this.view.octaveOffset)
+		console.log("Octave: " + this.baseNote.octave())
 		console.log("Measure: " + this.view.measureOffset)
+
+		// turn off the grid
+		for(let i = 1; i <= 8; i += 1) {
+			for(let j = 1; j <= 8; j += 1) {
+				Launchpad.setPad(i, j, "off")
+			}
+		}
+
+		let scale = new teoria.scale(this.baseNote, this.scaleType)
+		let scaleNotes = scale.notes().map((note) => {
+			return note.scientific()
+		})
+		console.log(scaleNotes)
+
+		// get all events
+		for(let e in this.part._events){
+			let eventData = this.part._events[e].value
+			if(eventData.measureOffset === this.view.measureOffset) {
+				console.log(eventData.notes)
+
+				for(let n in eventData.notes) {
+					let scalePos = scaleNotes.indexOf(n)
+					if(scalePos !== -1) {
+						console.log("Note " + n + " goes at time " + eventData.measureTime + ", pitch " + (scalePos + 1))
+						Launchpad.setPad((scalePos + 1), eventData.measureTime, "on", 49)
+					}
+				}
+			}
+		}
 	}
 }
 
