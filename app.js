@@ -33,7 +33,7 @@ WebMidi.enable((err) => {
 		Tone.Transport.start()
 
 		// "Metronome" pulse light
-		Launchpad.setPad(9, 8, "pulse", 1)
+		Launchpad.setPad(9, 8, "flash", 1)
 
 		// party()
 

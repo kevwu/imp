@@ -54,7 +54,6 @@ module.exports = (Tone, Launchpad) => {
 				console.log(loopLength)
 				if (loopLength < this.view.measureOffset + 1) {
 					// extend part
-					console.log("Extending part.")
 					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"
 				}
 
@@ -70,7 +69,7 @@ module.exports = (Tone, Launchpad) => {
 				} else { // part exists at this time, modify it
 					let partAtTime = this.part.at(time).value
 
-					if (!partAtTime.samples[sampleIndex]) { // note doesn't exist, add it
+					if (typeof partAtTime.samples[sampleIndex] === "undefined") { // note doesn't exist, add it
 						partAtTime.samples[sampleIndex] = sampleIndex
 						Launchpad.setPad(row, col, "on", 19)
 					} else { // sample is switched on, switch it off
