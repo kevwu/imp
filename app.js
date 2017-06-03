@@ -18,45 +18,33 @@ WebMidi.enable((err) => {
 
 		SequencePattern = require("./js/SequencePattern")(Tone, Launchpad)
 		BouncePattern = require("./js/BouncePattern")(Tone, Launchpad)
+		DrumkitPattern = require("./js/DrumkitPattern")(Tone, Launchpad)
 
 		Tone.Transport.bpm.value = 120
 		// Tone.Transport.loop = true
 		// Tone.Transport.loopStart = 0
 		// Tone.Transport.loopEnd = "1m"
 
-		// metronome loop
-		// the metronome starts at zero and counts on [1,8].
-		metronomePos = 0
-		Tone.Transport.scheduleRepeat((time) => {
-			if(metronomePos > 0) {
-				Launchpad.setPad(metronomePos, 9, "off")
-			}
-			metronomePos += 1
-			if(metronomePos > 8) {
-				metronomePos = 1
-			}
-
-			Launchpad.setPad(metronomePos, 9, "on", 22)
-
-				// console.log(Tone.Transport.height)
-				// console.log(metronomePos)
-		}, "8n")
-
 		// midi clock to synchronize pulse animation
 		Tone.Transport.scheduleRepeat((time) => {
 			Launchpad.output.sendClock()
 		}, "4n / 24")
 
-
 		Tone.Transport.start()
+
+		// "Metronome" pulse light
+		Launchpad.setPad(9, 8, "pulse", 1)
 
 		// party()
 
-		let sequence = new SequencePattern()
-		sequence.activate()
+		// let sequence = new SequencePattern()
+		// sequence.activate()
 
 		// let bounce = new BouncePattern()
 		// bounce.activate()
+
+		let drumkit = new DrumkitPattern()
+		drumkit.activate()
 
 		// let scale = new teoria.scale('A4', 'major')
 		// console.log(scale)
@@ -72,7 +60,9 @@ function party() {
 	Tone.Transport.scheduleRepeat((time) => {
 		for(let i = 1; i <= 9; i += 1){
 			for(let j = 1; j <= 9; j += 1){
-				Launchpad.setPad(i, j, "on", Math.floor(Math.random()*(127-1+1)+1))
+				if(!(i === 9 && j === 9)) {
+					Launchpad.setPad(i, j, "on", Math.floor(Math.random()*(127-1+1)+1))
+				}
 			}
 		}
 	}, "8n")
