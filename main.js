@@ -3,15 +3,17 @@ const path = require('path')
 const url = require('url')
 
 const dirTree = require("directory-tree")
-console.log(dirTree('drumkits'))
 
 const env = "DEV" // "PI"
 
 let window
 
-function createWindow () {
+app.on('ready', () => {
 	// Create the browser window.
 	window = new BrowserWindow({frame: false})
+
+	// send kit directory listing
+	window.kits = dirTree('kits')
 
 	// and load the index.html of the app.
 	window.loadURL(url.format({
@@ -33,9 +35,7 @@ function createWindow () {
 		window.maximize()
 		window.setFullScreen(true)
 	}
-}
-
-app.on('ready', createWindow)
+})
 
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {

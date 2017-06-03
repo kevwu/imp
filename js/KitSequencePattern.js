@@ -1,25 +1,27 @@
+let remote = require("electron").remote
 let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
 	class KitSequence extends Pattern {
-		constructor() {
+		constructor(kitName) {
 			super()
+
+			let kit = remote.getCurrentWindow().kits.children.find((el, ind, arr) => {
+				return el.name === kitName
+			})
+
+			let kitSamples = kit.children.map((el, ind, arr) => {
+					return "./" + el.path
+			})
 
 			this.view = {}
 			this.view.measureOffset = 0
 			this.view.noteZoom = 8
 			this.view.sampleOffset = 0
 
-			this.player = new Tone.MultiPlayer([
-				"./kits/808/BD7575.WAV",
-				"./kits/808/CB.WAV",
-				"./kits/808/HT75.WAV",
-				"./kits/808/SD7575.WAV",
-			], () => {
+			this.player = new Tone.MultiPlayer(kitSamples, () => {
 				this.part = new Tone.Part((time, data) => {
-					console.log(time)
-					// this.player.start(Object.values(data.samples), time)
-					for(let sample in data.samples) {
+					for (let sample in data.samples) {
 						this.player.start(sample, time)
 					}
 				})
@@ -51,7 +53,6 @@ module.exports = (Tone, Launchpad) => {
 					loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
 				}
 
-				console.log(loopLength)
 				if (loopLength < this.view.measureOffset + 1) {
 					// extend part
 					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"

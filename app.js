@@ -43,7 +43,7 @@ WebMidi.enable((err) => {
 		// let bounce = new BouncePattern()
 		// bounce.activate()
 
-		let kit = new KitSequencePattern()
+		let kit = new KitSequencePattern('808')
 		kit.activate()
 
 		// let scale = new teoria.scale('A4', 'major')
