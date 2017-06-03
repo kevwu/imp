@@ -2,10 +2,10 @@ let Tone = require("tone")
 let WebMidi = require("webmidi")
 
 let Launchpad
-let metronomePos
 
-let SequencePattern
+let ScaleSequencePattern
 let BouncePattern
+let KitSequencePattern
 
 WebMidi.enable((err) => {
 	if(err) {
@@ -16,9 +16,9 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		SequencePattern = require("./js/SequencePattern")(Tone, Launchpad)
+		ScaleSequencePattern = require("./js/ScaleSequencePattern")(Tone, Launchpad)
 		BouncePattern = require("./js/BouncePattern")(Tone, Launchpad)
-		DrumkitPattern = require("./js/DrumkitPattern")(Tone, Launchpad)
+		KitSequencePattern = require("./js/KitSequencePattern")(Tone, Launchpad)
 
 		Tone.Transport.bpm.value = 120
 		// Tone.Transport.loop = true
@@ -37,14 +37,14 @@ WebMidi.enable((err) => {
 
 		// party()
 
-		// let sequence = new SequencePattern()
+		// let sequence = new ScaleSequence()
 		// sequence.activate()
 
 		// let bounce = new BouncePattern()
 		// bounce.activate()
 
-		let drumkit = new DrumkitPattern()
-		drumkit.activate()
+		let kit = new KitSequencePattern()
+		kit.activate()
 
 		// let scale = new teoria.scale('A4', 'major')
 		// console.log(scale)

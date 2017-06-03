@@ -1,7 +1,7 @@
 let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
-	class DrumkitPattern extends Pattern {
+	class KitSequence extends Pattern {
 		constructor() {
 			super()
 
@@ -11,10 +11,10 @@ module.exports = (Tone, Launchpad) => {
 			this.view.sampleOffset = 0
 
 			this.player = new Tone.MultiPlayer([
-				"./drumkits/808/BD7575.WAV",
-				"./drumkits/808/CB.WAV",
-				"./drumkits/808/HT75.WAV",
-				"./drumkits/808/SD7575.WAV",
+				"./kits/808/BD7575.WAV",
+				"./kits/808/CB.WAV",
+				"./kits/808/HT75.WAV",
+				"./kits/808/SD7575.WAV",
 			], () => {
 				this.part = new Tone.Part((time, data) => {
 					console.log(time)
@@ -95,5 +95,5 @@ module.exports = (Tone, Launchpad) => {
 		}
 	}
 
-	return DrumkitPattern
+	return KitSequence
 }

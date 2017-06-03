@@ -2,6 +2,9 @@ const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
 
+const dirTree = require("directory-tree")
+console.log(dirTree('drumkits'))
+
 const env = "DEV" // "PI"
 
 let window

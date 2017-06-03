@@ -1,9 +1,7 @@
-let teoria = require("teoria")
-
 let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
-	class SequencePattern extends Pattern {
+	class ScaleSequence extends Pattern {
 		constructor() {
 			super()
 			// synth must support polyphony
@@ -164,5 +162,5 @@ module.exports = (Tone, Launchpad) => {
 		}
 	}
 
-	return SequencePattern
+	return ScaleSequence
 }

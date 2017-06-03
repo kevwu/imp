@@ -9,10 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "directory-tree": "^2.0.0",
     "electron": "^1.6.7",
     "music-scale": "^1.2.0",
     "shortid": "^2.2.8",
-    "teoria": "^2.2.2",
     "tone": "^0.10.0",
     "webmidi": "^2.0.0-rc.5"
   }
