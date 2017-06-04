@@ -1,3 +1,4 @@
+let teoria = require("teoria")
 let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
@@ -15,10 +16,7 @@ module.exports = (Tone, Launchpad) => {
 
 			// view-related variables
 			this.view = {}
-
-			// what section of the pattern the LP is currently focusing on (in 32n)
-			this.view.measureOffset = 0
-
+			this.view.measureOffset = 0 // what section of the pattern the LP is currently focusing on (in 32n)
 			// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
 			// this is turned into Tone's representation of a note
 			// just use 4 for 4n, 8 for 8n, etc.
@@ -81,11 +79,7 @@ module.exports = (Tone, Launchpad) => {
 				} else {
 					loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
 				}
-
-				console.log(loopLength)
 				if (loopLength < this.view.measureOffset + 1) {
-					// extend part
-					console.log("Extending part.")
 					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"
 				}
 

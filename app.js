@@ -37,7 +37,7 @@ WebMidi.enable((err) => {
 
 		// party()
 
-		// let sequence = new ScaleSequence()
+		// let sequence = new ScaleSequencePattern()
 		// sequence.activate()
 
 		// let bounce = new BouncePattern()

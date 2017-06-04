@@ -14,11 +14,6 @@ module.exports = (Tone, Launchpad) => {
 					return "./" + el.path
 			})
 
-			this.view = {}
-			this.view.measureOffset = 0
-			this.view.noteZoom = 8
-			this.view.sampleOffset = 0
-
 			this.player = new Tone.MultiPlayer(kitSamples, () => {
 				this.part = new Tone.Part((time, data) => {
 					for (let sample in data.samples) {
@@ -29,11 +24,37 @@ module.exports = (Tone, Launchpad) => {
 				this.part.loopEnd = "1 * 1m"
 				this.part.start("@1m")
 			}).toMaster()
+
+			// explained in ScaleSequencePattern.js
+			this.view = {}
+			this.view.measureOffset = 0
+			this.view.noteZoom = 8
+			this.view.sampleOffset = 0
 		}
 
 		activate() {
 			this.onHandlerId = Launchpad.on("noteon", (row, col) => {
 				if (row === 9) {
+					switch (col) {
+						case 1:
+							// sample set up
+							this.view.sampleOffset += 8
+							break;
+						case 2:
+							// sample set down
+							this.view.sampleOffset = Math.max(0, this.view.sampleOffset + 8)
+							break;
+						case 3:
+							// measure left
+							this.view.measureOffset = Math.max(0, this.view.measureOffset - 1)
+							break;
+						case 4:
+							// measure right
+							this.view.measureOffset += 1
+							break;
+					}
+
+					this._render()
 					return
 				}
 
@@ -52,9 +73,7 @@ module.exports = (Tone, Launchpad) => {
 				} else {
 					loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
 				}
-
 				if (loopLength < this.view.measureOffset + 1) {
-					// extend part
 					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"
 				}
 
@@ -93,6 +112,36 @@ module.exports = (Tone, Launchpad) => {
 		deactivate() {
 			Launchpad.off("noteon", this.onHandlerId)
 			Launchpad.off("noteoff", this.offHandlerId)
+		}
+
+
+		// draw scene to Launchpad from scratch
+		_render() {
+			console.log("Render")
+			console.log("Samples: " + this.view.sampleOffset)
+			console.log("Measure: " + this.view.measureOffset)
+
+			// turn off the grid
+			for (let i = 1; i <= 8; i += 1) {
+				for (let j = 1; j <= 8; j += 1) {
+					Launchpad.setPad(i, j, "off")
+				}
+			}
+
+			// get all events
+			this.part._events.forEach((event) => {
+				let eventData = event.value
+
+				// we only need to draw the events on this measure grid
+				if(eventData.measureOffset === this.view.measureOffset) {
+					eventData.samples.forEach((sample) => {
+						let samplePos = sample + 1 + this.view.sampleOffset
+						if(samplePos >= 1 && samplePos <= 8) {
+							Launchpad.setPad(sample + 1 + this.view.sampleOffset, eventData.measureTime, "on", 19)
+						}
+					})
+				}
+			})
 		}
 	}
 
