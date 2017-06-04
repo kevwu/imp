@@ -42,7 +42,7 @@ module.exports = (Tone, Launchpad) => {
 							break;
 						case 2:
 							// sample set down
-							this.view.sampleOffset = Math.max(0, this.view.sampleOffset + 8)
+							this.view.sampleOffset = Math.max(0, this.view.sampleOffset - 8)
 							break;
 						case 3:
 							// measure left
