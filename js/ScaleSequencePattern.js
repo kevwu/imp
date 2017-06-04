@@ -141,10 +141,10 @@ module.exports = (Tone, Launchpad) => {
 			})
 
 			// get all events
-			for (let e in this.part._events) {
-				let eventData = this.part._events[e].value
-				if (eventData.measureOffset === this.view.measureOffset) {
+			this.part._events.forEach((e) => {
+				let eventData = e.value
 
+				if (eventData.measureOffset === this.view.measureOffset) {
 					for (let n in eventData.notes) {
 						let scalePos = scaleNotes.indexOf(n)
 						if (scalePos !== -1) {
@@ -152,7 +152,7 @@ module.exports = (Tone, Launchpad) => {
 						}
 					}
 				}
-			}
+			})
 		}
 	}
 

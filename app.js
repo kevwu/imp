@@ -46,9 +46,6 @@ WebMidi.enable((err) => {
 		let kit = new KitSequencePattern('808')
 		kit.activate()
 
-		// let scale = new teoria.scale('A4', 'major')
-		// console.log(scale)
-		// console.log(scale.get(1).scientific())
 	}
 }, true)
 

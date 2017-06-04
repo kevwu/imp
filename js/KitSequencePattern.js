@@ -13,6 +13,7 @@ module.exports = (Tone, Launchpad) => {
 			let kitSamples = kit.children.map((el, ind, arr) => {
 					return "./" + el.path
 			})
+			this.numSamples = kitSamples.length
 
 			this.player = new Tone.MultiPlayer(kitSamples, () => {
 				this.part = new Tone.Part((time, data) => {
@@ -30,6 +31,9 @@ module.exports = (Tone, Launchpad) => {
 			this.view.measureOffset = 0
 			this.view.noteZoom = 8
 			this.view.sampleOffset = 0
+
+			this.canvas = document.getElementById('kitSequence-canvas').getContext('2d')
+
 		}
 
 		activate() {
@@ -63,6 +67,11 @@ module.exports = (Tone, Launchpad) => {
 				}
 
 				let sampleIndex = (row - 1) + this.view.sampleOffset
+
+				if(sampleIndex >= this.numSamples) {
+					console.log("Sample out of range: " + sampleIndex)
+					return
+				}
 
 				let time = ((col - 1) + (this.view.measureOffset * this.view.noteZoom)) + " * " + this.view.noteZoom + "n"
 
@@ -117,10 +126,6 @@ module.exports = (Tone, Launchpad) => {
 
 		// draw scene to Launchpad from scratch
 		_render() {
-			console.log("Render")
-			console.log("Samples: " + this.view.sampleOffset)
-			console.log("Measure: " + this.view.measureOffset)
-
 			// turn off the grid
 			for (let i = 1; i <= 8; i += 1) {
 				for (let j = 1; j <= 8; j += 1) {
@@ -134,10 +139,11 @@ module.exports = (Tone, Launchpad) => {
 
 				// we only need to draw the events on this measure grid
 				if(eventData.measureOffset === this.view.measureOffset) {
+					console.log(eventData.samples)
 					eventData.samples.forEach((sample) => {
-						let samplePos = sample + 1 + this.view.sampleOffset
+						let samplePos = sample + 1 - this.view.sampleOffset
 						if(samplePos >= 1 && samplePos <= 8) {
-							Launchpad.setPad(sample + 1 + this.view.sampleOffset, eventData.measureTime, "on", 19)
+							Launchpad.setPad(sample + 1 - this.view.sampleOffset, eventData.measureTime, "on", 19)
 						}
 					})
 				}

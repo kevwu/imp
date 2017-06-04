@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<style>
-		@import url('https://fonts.googleapis.com/css?family=Dosis');
-
-		body {
-			font-family: Dosis, sans-serif;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="css/reset.css" />
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
 </head>
 <body>
+<div id="container">
+	<div class="view" id="instrument-view">
+
+	</div>
+	<div class="view" id="session-view">
+
+	</div>
+	<div class="view" id="kitSequence-view">
+		<canvas id="kitSequence-canvas"></canvas>
+	</div>
+	<div class="view" id="scaleSequence-view">
+
+	</div>
+	<div class="view" id="bounceSequence-view">
+	</div>
+</div>
 <script>
 	require("./app.js")
 </script>
