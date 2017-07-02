@@ -12,6 +12,7 @@
     "directory-tree": "^2.0.0",
     "electron": "^1.6.7",
     "music-scale": "^1.2.0",
+    "paper": "^0.11.4",
     "shortid": "^2.2.8",
     "teoria": "^2.2.2",
     "tone": "^0.10.0",

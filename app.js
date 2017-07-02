@@ -1,6 +1,8 @@
 let Tone = require("tone")
 let WebMidi = require("webmidi")
 
+let paper = require("paper")
+
 let Launchpad
 
 let ScaleSequencePattern
@@ -32,20 +34,17 @@ WebMidi.enable((err) => {
 
 		Tone.Transport.start()
 
-		// "Metronome" pulse light
+		// "Metronome" pulse light, timing provided by midi clock callback above
 		Launchpad.setPad(9, 8, "flash", 1)
 
-		// party()
+		// set up Paper canvas
+		paper.setup(document.getElementById('mainCanvas'))
+		paper.project.currentStyle = {
+			fontFamily: 'Dosis',
+		}
 
-		// let sequence = new ScaleSequencePattern()
-		// sequence.activate()
-
-		// let bounce = new BouncePattern()
-		// bounce.activate()
-
-		let kit = new KitSequencePattern('808')
+		let kit = new KitSequencePattern(paper.view)
 		kit.activate()
-
 	}
 }, true)
 

@@ -1,23 +1,14 @@
-class Pattern {
+let View = require("./View.js")
+
+class Pattern extends View{
 	// when pattern is added
-	constructor() {
+	constructor(pView) {
+		super(pView)
 		this.instrument = null
 	}
 
-	// when pattern is switched into
-	// bind event handlers, render previous state to Launchpad, etc
-	activate() {
-
-	}
-
-	// runs when switching away from pattern
-	// clear event handlers, reset Launchpad, etc
-	deactivate() {
-
-	}
-
 	// start up the pattern (usually quantized)
-	play() {
+	start() {
 
 	}
 

@@ -10,8 +10,8 @@ module.exports = (Tone, Launchpad) => {
 			this.columns = []
 
 			// left/right offset
-			this.view = {}
-			this.view.measureOffset = 0
+			this.position = {}
+			this.position.measureOffset = 0
 
 			this.tick = new Tone.Loop((time) => {
 				for (let col in this.columns) {
@@ -19,7 +19,7 @@ module.exports = (Tone, Launchpad) => {
 					let bouncer = this.columns[col]
 
 					// clear current height
-					Launchpad.setPad(bouncer.height, (parseInt(col) + parseInt(this.view.measureOffset)), "off")
+					Launchpad.setPad(bouncer.height, (parseInt(col) + parseInt(this.position.measureOffset)), "off")
 
 					let color = 29
 
@@ -34,9 +34,10 @@ module.exports = (Tone, Launchpad) => {
 						color = 36
 					}
 
-					Launchpad.setPad(bouncer.height, col + this.view.measureOffset, "on", color)
+					Launchpad.setPad(bouncer.height, col + this.position.measureOffset, "on", color)
 				}
-			}, "32n").start(0)
+			}, "32n")
+			this.tick.start(0)
 		}
 
 		activate() {
@@ -50,7 +51,7 @@ module.exports = (Tone, Launchpad) => {
 				}
 
 				// "true" column
-				let bounceColumn = (col + this.view.measureOffset)
+				let bounceColumn = (col + this.position.measureOffset)
 
 				// either delete or create a bouncer with period 1
 				if (row === 1 && this.columns[bounceColumn]) {

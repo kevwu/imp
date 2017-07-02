@@ -3,8 +3,11 @@ let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
 	class KitSequence extends Pattern {
-		constructor(kitName) {
-			super()
+		constructor(pView) {
+			super(pView)
+
+			// TODO choose this via modal
+			let kitName = '808'
 
 			let kit = remote.getCurrentWindow().kits.children.find((el, ind, arr) => {
 				return el.name === kitName
@@ -27,13 +30,10 @@ module.exports = (Tone, Launchpad) => {
 			}).toMaster()
 
 			// explained in ScaleSequencePattern.js
-			this.view = {}
-			this.view.measureOffset = 0
-			this.view.noteZoom = 8
-			this.view.sampleOffset = 0
-
-			this.canvas = document.getElementById('kitSequence-canvas').getContext('2d')
-
+			this.position = {}
+			this.position.measureOffset = 0
+			this.position.noteZoom = 8
+			this.position.sampleOffset = 0
 		}
 
 		activate() {
@@ -42,19 +42,19 @@ module.exports = (Tone, Launchpad) => {
 					switch (col) {
 						case 1:
 							// sample set up
-							this.view.sampleOffset += 8
+							this.position.sampleOffset += 8
 							break;
 						case 2:
 							// sample set down
-							this.view.sampleOffset = Math.max(0, this.view.sampleOffset - 8)
+							this.position.sampleOffset = Math.max(0, this.position.sampleOffset - 8)
 							break;
 						case 3:
 							// measure left
-							this.view.measureOffset = Math.max(0, this.view.measureOffset - 1)
+							this.position.measureOffset = Math.max(0, this.position.measureOffset - 1)
 							break;
 						case 4:
 							// measure right
-							this.view.measureOffset += 1
+							this.position.measureOffset += 1
 							break;
 					}
 
@@ -66,14 +66,14 @@ module.exports = (Tone, Launchpad) => {
 					return
 				}
 
-				let sampleIndex = (row - 1) + this.view.sampleOffset
+				let sampleIndex = (row - 1) + this.position.sampleOffset
 
 				if(sampleIndex >= this.numSamples) {
 					console.log("Sample out of range: " + sampleIndex)
 					return
 				}
 
-				let time = ((col - 1) + (this.view.measureOffset * this.view.noteZoom)) + " * " + this.view.noteZoom + "n"
+				let time = ((col - 1) + (this.position.measureOffset * this.position.noteZoom)) + " * " + this.position.noteZoom + "n"
 
 				// extend part length if necessary
 				let loopLength
@@ -82,8 +82,8 @@ module.exports = (Tone, Launchpad) => {
 				} else {
 					loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
 				}
-				if (loopLength < this.view.measureOffset + 1) {
-					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"
+				if (loopLength < this.position.measureOffset + 1) {
+					this.part.loopEnd = (this.position.measureOffset + 1) + "*1m"
 				}
 
 				if (this.part.at(time) === null) { // part at time doesn't exist, create it (and add the note, since that definitely did not exist)
@@ -92,7 +92,7 @@ module.exports = (Tone, Launchpad) => {
 					this.part.at(time, {
 						samples: samples,
 						measureTime: col, // position within the measure
-						measureOffset: this.view.measureOffset, // grid position
+						measureOffset: this.position.measureOffset, // grid position
 					})
 					Launchpad.setPad(row, col, "on", 19)
 				} else { // part exists at this time, modify it
@@ -138,12 +138,12 @@ module.exports = (Tone, Launchpad) => {
 				let eventData = event.value
 
 				// we only need to draw the events on this measure grid
-				if(eventData.measureOffset === this.view.measureOffset) {
+				if(eventData.measureOffset === this.position.measureOffset) {
 					console.log(eventData.samples)
 					eventData.samples.forEach((sample) => {
-						let samplePos = sample + 1 - this.view.sampleOffset
+						let samplePos = sample + 1 - this.position.sampleOffset
 						if(samplePos >= 1 && samplePos <= 8) {
-							Launchpad.setPad(sample + 1 - this.view.sampleOffset, eventData.measureTime, "on", 19)
+							Launchpad.setPad(sample + 1 - this.position.sampleOffset, eventData.measureTime, "on", 19)
 						}
 					})
 				}

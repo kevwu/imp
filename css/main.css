@@ -19,6 +19,17 @@
   font-weight: bold;
   font-style: normal; }
 body {
-  font-family: 'Dosis', sans-serif; }
+  font-family: 'Dosis', sans-serif;
+  height: 240px;
+  width: 320px;
+  overflow: hidden; }
+
+#container {
+  height: 100%;
+  width: 100%; }
+
+#mainCanvas {
+  height: 100%;
+  width: 100%; }
 
 /*# sourceMappingURL=main.css.map */

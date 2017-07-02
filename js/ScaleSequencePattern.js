@@ -14,13 +14,13 @@ module.exports = (Tone, Launchpad) => {
 			// eventually this can be set from higher, e.g. at the project level
 			this.baseNote = new teoria.note.fromString("Bb4")
 
-			// view-related variables
-			this.view = {}
-			this.view.measureOffset = 0 // what section of the pattern the LP is currently focusing on (in 32n)
-			// note "resolution" of the LP view (e.g. each grid is a 32nd note, 16th note, etc)
+			// pView-related variables
+			this.position = {}
+			this.position.measureOffset = 0 // what section of the pattern the LP is currently focusing on (in 32n)
+			// note "resolution" of the LP pView (e.g. each grid is a 32nd note, 16th note, etc)
 			// this is turned into Tone's representation of a note
 			// just use 4 for 4n, 8 for 8n, etc.
-			this.view.noteZoom = 8
+			this.position.noteZoom = 8
 
 			this.part = new Tone.Part((time, data) => {
 				this.instrument.triggerAttackRelease(Object.values(data.notes), this.holdTime, time)
@@ -38,21 +38,21 @@ module.exports = (Tone, Launchpad) => {
 					switch (col) {
 						case 1:
 							// octave up
-							// this.view.octaveOffset += 12
+							// this.position.octaveOffset += 12
 							this.baseNote = this.baseNote.interval("P8")
 							break;
 						case 2:
 							// octave down
-							// this.view.octaveOffset -= 12
+							// this.position.octaveOffset -= 12
 							this.baseNote = this.baseNote.interval("P-8")
 							break;
 						case 3:
 							// measure left
-							this.view.measureOffset = Math.max(0, this.view.measureOffset - 1)
+							this.position.measureOffset = Math.max(0, this.position.measureOffset - 1)
 							break;
 						case 4:
 							// measure right
-							this.view.measureOffset += 1
+							this.position.measureOffset += 1
 							break;
 					}
 
@@ -70,7 +70,7 @@ module.exports = (Tone, Launchpad) => {
 				// we don't need to do row-1 because teoria.scale.get() starts at 1
 				let note = scale.get(row).scientific()
 
-				let time = ((col - 1) + (this.view.measureOffset * this.view.noteZoom)) + " * " + this.view.noteZoom + "n"
+				let time = ((col - 1) + (this.position.measureOffset * this.position.noteZoom)) + " * " + this.position.noteZoom + "n"
 
 				// extend part length if necessary
 				let loopLength
@@ -79,8 +79,8 @@ module.exports = (Tone, Launchpad) => {
 				} else {
 					loopLength = parseInt(this.part.loopEnd.replace("*1m", ""))
 				}
-				if (loopLength < this.view.measureOffset + 1) {
-					this.part.loopEnd = (this.view.measureOffset + 1) + "*1m"
+				if (loopLength < this.position.measureOffset + 1) {
+					this.part.loopEnd = (this.position.measureOffset + 1) + "*1m"
 				}
 
 				if (this.part.at(time) === null) { // part at time doesn't exist, create it (and add the note, since that definitely did not exist)
@@ -90,7 +90,7 @@ module.exports = (Tone, Launchpad) => {
 						notes: notesArr,
 						hold: [this.holdTime],
 						measureTime: col, // position within the measure
-						measureOffset: this.view.measureOffset, // grid position
+						measureOffset: this.position.measureOffset, // grid position
 					})
 					Launchpad.setPad(row, col, "on", 49)
 				} else { // part exists at this time, modify it
@@ -126,7 +126,7 @@ module.exports = (Tone, Launchpad) => {
 		_render() {
 			console.log("Render")
 			console.log("Octave: " + this.baseNote.octave())
-			console.log("Measure: " + this.view.measureOffset)
+			console.log("Measure: " + this.position.measureOffset)
 
 			// turn off the grid
 			for (let i = 1; i <= 8; i += 1) {
@@ -144,7 +144,7 @@ module.exports = (Tone, Launchpad) => {
 			this.part._events.forEach((e) => {
 				let eventData = e.value
 
-				if (eventData.measureOffset === this.view.measureOffset) {
+				if (eventData.measureOffset === this.position.measureOffset) {
 					for (let n in eventData.notes) {
 						let scalePos = scaleNotes.indexOf(n)
 						if (scalePos !== -1) {
