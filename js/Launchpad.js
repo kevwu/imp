@@ -91,6 +91,15 @@ class Launchpad {
 		}
 	}
 
+	// clear grid only
+	clearGrid() {
+		for (let i = 1; i <= 8; i += 1) {
+			for (let j = 1; j <= 8; j += 1) {
+				this.setPad(i, j, "off")
+			}
+		}
+	}
+
 	_handleNoteOn(row, col) {
 		for(let h in this.noteOnHandlers) {
 			let handler = this.noteOnHandlers[h]

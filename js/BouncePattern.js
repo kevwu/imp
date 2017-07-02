@@ -1,6 +1,6 @@
-let Pattern = require("./Pattern")
-
 module.exports = (Tone, Launchpad) => {
+	let Pattern = require("./Pattern")(Launchpad)
+
 	class BouncePattern extends Pattern {
 
 		constructor() {
@@ -38,10 +38,8 @@ module.exports = (Tone, Launchpad) => {
 				}
 			}, "32n")
 			this.tick.start(0)
-		}
 
-		activate() {
-			this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+			this.onHandler = (row, col) => {
 				if (row === 9 || col === 9) {
 					return
 				}
@@ -67,11 +65,11 @@ module.exports = (Tone, Launchpad) => {
 				}
 
 				this.columns[bounceColumn] = bouncer
-			})
-		}
+			}
 
-		deactivate() {
-			Launchpad.off("noteon", this.onHandlerId)
+			this.offHandler = (row, col) => {
+
+			}
 		}
 	}
 

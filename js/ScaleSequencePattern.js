@@ -1,10 +1,11 @@
 let teoria = require("teoria")
-let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
+	let Pattern = require("./Pattern")(Launchpad)
+
 	class ScaleSequence extends Pattern {
-		constructor() {
-			super()
+		constructor(pView) {
+			super(pView)
 			// synth must support polyphony
 			this.instrument = new Tone.PolySynth(6, Tone.Synth).toMaster()
 			this.sequence = []
@@ -30,10 +31,8 @@ module.exports = (Tone, Launchpad) => {
 			this.part.start("@1m")
 
 			this.scaleType = "major"
-		}
 
-		activate() {
-			this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+			this.onHandler = (row, col) => {
 				if (row === 9) {
 					switch (col) {
 						case 1:
@@ -56,7 +55,7 @@ module.exports = (Tone, Launchpad) => {
 							break;
 					}
 
-					this._render()
+					this.render()
 					return
 				}
 
@@ -110,20 +109,15 @@ module.exports = (Tone, Launchpad) => {
 
 					this.part.at(time, partAtTime)
 				}
-			})
+			}
 
-			this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
-			})
-		}
+			this.offHandler = (row, col) => {
 
-		deactivate() {
-			// remove event handlers
-			Launchpad.off("noteon", this.onHandlerId)
-			Launchpad.off("noteoff", this.offHandlerId)
+			}
 		}
 
 		// draw scene to Launchpad from scratch
-		_render() {
+		render() {
 			console.log("Render")
 			console.log("Octave: " + this.baseNote.octave())
 			console.log("Measure: " + this.position.measureOffset)
@@ -135,24 +129,27 @@ module.exports = (Tone, Launchpad) => {
 				}
 			}
 
-			let scale = new teoria.scale(this.baseNote, this.scaleType)
-			let scaleNotes = scale.notes().map((note) => {
-				return note.scientific()
-			})
 
 			// get all events
-			this.part._events.forEach((e) => {
-				let eventData = e.value
+			if(typeof this.part !== "undefined") {
+				let scale = new teoria.scale(this.baseNote, this.scaleType)
+				let scaleNotes = scale.notes().map((note) => {
+					return note.scientific()
+				})
 
-				if (eventData.measureOffset === this.position.measureOffset) {
-					for (let n in eventData.notes) {
-						let scalePos = scaleNotes.indexOf(n)
-						if (scalePos !== -1) {
-							Launchpad.setPad((scalePos + 1), eventData.measureTime, "on", 49)
+				this.part._events.forEach((e) => {
+					let eventData = e.value
+
+					if (eventData.measureOffset === this.position.measureOffset) {
+						for (let n in eventData.notes) {
+							let scalePos = scaleNotes.indexOf(n)
+							if (scalePos !== -1) {
+								Launchpad.setPad((scalePos + 1), eventData.measureTime, "on", 49)
+							}
 						}
 					}
-				}
-			})
+				})
+			}
 		}
 	}
 

@@ -1,7 +1,8 @@
 let remote = require("electron").remote
-let Pattern = require("./Pattern")
 
 module.exports = (Tone, Launchpad) => {
+	let Pattern = require("./Pattern")(Launchpad)
+
 	class KitSequence extends Pattern {
 		constructor(pView) {
 			super(pView)
@@ -34,10 +35,8 @@ module.exports = (Tone, Launchpad) => {
 			this.position.measureOffset = 0
 			this.position.noteZoom = 8
 			this.position.sampleOffset = 0
-		}
 
-		activate() {
-			this.onHandlerId = Launchpad.on("noteon", (row, col) => {
+			this.onHandler = (row, col) => {
 				if (row === 9) {
 					switch (col) {
 						case 1:
@@ -58,7 +57,7 @@ module.exports = (Tone, Launchpad) => {
 							break;
 					}
 
-					this._render()
+					this.render()
 					return
 				}
 
@@ -112,42 +111,36 @@ module.exports = (Tone, Launchpad) => {
 
 					this.part.at(time, partAtTime)
 				}
-			})
-
-			this.offHandlerId = Launchpad.on("noteoff", (row, col) => {
-			})
-		}
-
-		deactivate() {
-			Launchpad.off("noteon", this.onHandlerId)
-			Launchpad.off("noteoff", this.offHandlerId)
-		}
-
-
-		// draw scene to Launchpad from scratch
-		_render() {
-			// turn off the grid
-			for (let i = 1; i <= 8; i += 1) {
-				for (let j = 1; j <= 8; j += 1) {
-					Launchpad.setPad(i, j, "off")
-				}
 			}
 
-			// get all events
-			this.part._events.forEach((event) => {
-				let eventData = event.value
+			this.offHandler = (row, col) => {
+			}
+		}
 
-				// we only need to draw the events on this measure grid
-				if(eventData.measureOffset === this.position.measureOffset) {
-					console.log(eventData.samples)
-					eventData.samples.forEach((sample) => {
-						let samplePos = sample + 1 - this.position.sampleOffset
-						if(samplePos >= 1 && samplePos <= 8) {
-							Launchpad.setPad(sample + 1 - this.position.sampleOffset, eventData.measureTime, "on", 19)
-						}
-					})
-				}
-			})
+		// draw scene to Launchpad from scratch
+		render() {
+			// turn off the grid
+			Launchpad.clearGrid()
+
+
+			// at first render, this.part might not exists
+			if(typeof this.part !== "undefined") {
+				// get all events
+				this.part._events.forEach((event) => {
+					let eventData = event.value
+
+					// we only need to draw the events on this measure grid
+					if(eventData.measureOffset === this.position.measureOffset) {
+						console.log(eventData.samples)
+						eventData.samples.forEach((sample) => {
+							let samplePos = sample + 1 - this.position.sampleOffset
+							if(samplePos >= 1 && samplePos <= 8) {
+								Launchpad.setPad(sample + 1 - this.position.sampleOffset, eventData.measureTime, "on", 19)
+							}
+						})
+					}
+				})
+			}
 		}
 	}
 

@@ -3,6 +3,8 @@ let WebMidi = require("webmidi")
 
 let paper = require("paper")
 
+let SessionView
+
 let Launchpad
 
 let ScaleSequencePattern
@@ -18,6 +20,8 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
+		SessionView = require("./js/SessionView")(Launchpad)
+
 		ScaleSequencePattern = require("./js/ScaleSequencePattern")(Tone, Launchpad)
 		BouncePattern = require("./js/BouncePattern")(Tone, Launchpad)
 		KitSequencePattern = require("./js/KitSequencePattern")(Tone, Launchpad)
@@ -28,6 +32,7 @@ WebMidi.enable((err) => {
 		// Tone.Transport.loopEnd = "1m"
 
 		// midi clock to synchronize pulse animation
+		// I'm 90% sure the resulting flash isn't actually on-beat
 		Tone.Transport.scheduleRepeat((time) => {
 			Launchpad.output.sendClock()
 		}, "4n / 24")
@@ -41,10 +46,14 @@ WebMidi.enable((err) => {
 		paper.setup(document.getElementById('mainCanvas'))
 		paper.project.currentStyle = {
 			fontFamily: 'Dosis',
+			fontSize: '20',
 		}
 
 		let kit = new KitSequencePattern(paper.view)
 		kit.activate()
+
+		// let sessionView = new SessionView(paper.view)
+		// sessionView.activate()
 	}
 }, true)
 
