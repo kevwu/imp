@@ -40,7 +40,7 @@ WebMidi.enable((err) => {
 		Tone.Transport.start()
 
 		// "Metronome" pulse light, timing provided by midi clock callback above
-		Launchpad.setPad(9, 8, "flash", 1)
+		// Launchpad.setPad(9, 8, "flash", 1)
 
 		// set up Paper canvas
 		paper.setup(document.getElementById('mainCanvas'))
@@ -49,11 +49,11 @@ WebMidi.enable((err) => {
 			fontSize: '20',
 		}
 
-		let kit = new KitSequencePattern(paper.view)
-		kit.activate()
+		// let kit = new ScaleSequencePattern(paper.view)
+		// kit.activate()
 
-		// let sessionView = new SessionView(paper.view)
-		// sessionView.activate()
+		let sessionView = new SessionView(paper.view)
+		sessionView.activate()
 	}
 }, true)
 
