@@ -7,9 +7,7 @@ let SessionView
 
 let Launchpad
 
-let ScaleSequencePattern
-let BouncePattern
-let KitSequencePattern
+let packageMeta = require("./package.json")
 
 WebMidi.enable((err) => {
 	if(err) {
@@ -22,11 +20,7 @@ WebMidi.enable((err) => {
 
 		paper.setup(document.getElementById('mainCanvas'))
 
-		SessionView = require("./js/SessionView")(Launchpad, paper.view)
-
-		ScaleSequencePattern = require("./js/ScaleSequencePattern")(Tone, Launchpad)
-		BouncePattern = require("./js/BouncePattern")(Tone, Launchpad)
-		KitSequencePattern = require("./js/KitSequencePattern")(Tone, Launchpad)
+		SessionView = require("./js/SessionView")(Tone, Launchpad, paper.view)
 
 		Tone.Transport.bpm.value = 120
 		// Tone.Transport.loop = true
@@ -49,6 +43,12 @@ WebMidi.enable((err) => {
 			fontFamily: 'Dosis',
 			fontSize: '20',
 		}
+
+		new paper.PointText({
+			point: [10, 230],
+			content: 'imp v' + packageMeta.version,
+			fontSize: 14
+		})
 
 		// let kit = new KitSequencePattern(paper.view)
 		// kit.activate()

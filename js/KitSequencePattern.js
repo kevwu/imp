@@ -36,7 +36,7 @@ module.exports = (Tone, Launchpad, pView) => {
 			this.position.noteZoom = 8
 			this.position.sampleOffset = 0
 
-			this.onHandler = (row, col) => {
+			this.padOnHandler = (row, col) => {
 				if (row === 9) {
 					switch (col) {
 						case 1:
@@ -113,7 +113,7 @@ module.exports = (Tone, Launchpad, pView) => {
 				}
 			}
 
-			this.offHandler = (row, col) => {
+			this.padOffHandler = (row, col) => {
 			}
 		}
 

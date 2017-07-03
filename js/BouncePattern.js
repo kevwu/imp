@@ -39,7 +39,7 @@ module.exports = (Tone, Launchpad, pView) => {
 			}, "32n")
 			this.tick.start(0)
 
-			this.onHandler = (row, col) => {
+			this.padOnHandler = (row, col) => {
 				if (row === 9 || col === 9) {
 					return
 				}
@@ -57,17 +57,16 @@ module.exports = (Tone, Launchpad, pView) => {
 					return
 				}
 
-				let bouncer = {
+				this.columns[bounceColumn] = {
 					maxHeight: row, // initial height is max height
 					height: row,
 					instrument: new Tone.Synth().toMaster(),
 					direction: -1,
 				}
 
-				this.columns[bounceColumn] = bouncer
 			}
 
-			this.offHandler = (row, col) => {
+			this.padOffHandler = (row, col) => {
 
 			}
 		}

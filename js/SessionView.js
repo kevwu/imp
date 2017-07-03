@@ -1,7 +1,11 @@
-module.exports = (Launchpad, pView) => {
+module.exports = (Tone, Launchpad, pView) => {
 	let View = require("./View")(Launchpad, pView)
 	let Selector = require("./Selector")(Launchpad, pView)
 	let paper = require("paper")
+
+	let ScaleSequencePattern = require("./ScaleSequencePattern")(Tone, Launchpad)
+	let BouncePattern = require("./BouncePattern")(Tone, Launchpad)
+	let KitSequencePattern = require("./KitSequencePattern")(Tone, Launchpad)
 
 	class SessionView extends View {
 		constructor() {
@@ -13,31 +17,54 @@ module.exports = (Launchpad, pView) => {
 			this.position = {}
 
 			// text for the pattern selector
-			this.patternTypeSelection = new Selector(
+			this.patternTypeSelector = new Selector(
 				[
 					{
 						label: "Kit pattern",
-						value: "kitsequence"
+						value: "kitSequence"
 					},
 					{
 						label: "Scale pattern",
-						value: "scalepattern",
+						value: "scaleSequence",
 					},
 					{
 						label: "Bouncer",
-						value: "bouncepattern"
+						value: "bounce"
 					},
 				],
-				new paper.PointText({
-					point: [200, 20],
-					visible: false,
+				new paper.Group({
+					style: {
+						fillColor: '#000'
+					},
 				}),
-				(choice) => {
+				(choice, context) => {
 					console.log(choice)
+
+					let patternKey = context.patternKey
+					switch(choice.value) {
+						case "kitSequence":
+							this.patterns[patternKey] = new KitSequencePattern()
+							break
+						case "scaleSequence":
+							this.patterns[patternKey] = new ScaleSequencePattern()
+							break
+						case "bounce":
+							this.patterns[patternKey] = new BouncePattern()
+							break
+						default:
+							console.log("fatal error")
+					}
+
+					console.log(this.patterns[patternKey])
+
+					this.patterns[patternKey].activate()
+					this.deactivate()
 				}
 			)
+			// must be set after initialization
+			this.patternTypeSelector.pGroup.position = pView.center
 
-			this.onHandler = (row, col) => {
+			this.padOnHandler = (row, col) => {
 				if (row === 9) {
 					return
 				}
@@ -51,21 +78,33 @@ module.exports = (Launchpad, pView) => {
 					this.patterns[patternKey].activate()
 				} else {
 					// new pattern
-					this.patternTypeSelection.activate()
+					if(this.patternTypeSelector.active) {
+						Launchpad.setPad(row, col, "off")
+						this.patternTypeSelector.deactivate()
+					} else {
+						Launchpad.setPad(row, col, "pulse", 60)
+						this.patternTypeSelector.activate({patternKey: patternKey})
+					}
 				}
 			}
 
-			this.offHandler = (row, col) => {
+			this.padOffHandler = (row, col) => {
 
 			}
 		}
 
 		render() {
 			new paper.PointText({
-				point: [0, 20],
-				content: 'Session view',
+				point: [160, 20],
+				content: 'SESSION VIEW',
 				fontSize: 22,
+				justification: 'center',
 			})
+		}
+
+		deactivate() {
+			super.deactivate()
+			this.patternTypeSelector.deactivate()
 		}
 	}
 

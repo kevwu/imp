@@ -32,7 +32,7 @@ module.exports = (Tone, Launchpad, pView) => {
 
 			this.scaleType = "major"
 
-			this.onHandler = (row, col) => {
+			this.padOnHandler = (row, col) => {
 				if (row === 9) {
 					switch (col) {
 						case 1:
@@ -111,7 +111,7 @@ module.exports = (Tone, Launchpad, pView) => {
 				}
 			}
 
-			this.offHandler = (row, col) => {
+			this.padOffHandler = (row, col) => {
 
 			}
 		}
