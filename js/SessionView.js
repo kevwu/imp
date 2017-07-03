@@ -1,6 +1,6 @@
 module.exports = (Launchpad, pView) => {
 	let View = require("./View")(Launchpad, pView)
-	let Selector = require("./Selector")(Launchpad)
+	let Selector = require("./Selector")(Launchpad, pView)
 	let paper = require("paper")
 
 	class SessionView extends View {
@@ -14,7 +14,20 @@ module.exports = (Launchpad, pView) => {
 
 			// text for the pattern selector
 			this.patternTypeSelection = new Selector(
-				["Kit pattern", "Scale pattern", "Bouncer"],
+				[
+					{
+						label: "Kit pattern",
+						value: "kitsequence"
+					},
+					{
+						label: "Scale pattern",
+						value: "scalepattern",
+					},
+					{
+						label: "Bouncer",
+						value: "bouncepattern"
+					},
+				],
 				new paper.PointText({
 					point: [200, 20],
 					visible: false,
@@ -25,6 +38,10 @@ module.exports = (Launchpad, pView) => {
 			)
 
 			this.onHandler = (row, col) => {
+				if (row === 9) {
+					return
+				}
+
 				let patternKey = ((row - 1) * 8) + col
 				console.log(patternKey)
 
@@ -34,7 +51,7 @@ module.exports = (Launchpad, pView) => {
 					this.patterns[patternKey].activate()
 				} else {
 					// new pattern
-					this.patternTypeSelection.pointText.visible = true
+					this.patternTypeSelection.activate()
 				}
 			}
 
