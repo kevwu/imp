@@ -20,7 +20,9 @@ WebMidi.enable((err) => {
 			WebMidi.getInputByName("Launchpad MK2 MIDI 1")
 		)
 
-		SessionView = require("./js/SessionView")(Launchpad)
+		paper.setup(document.getElementById('mainCanvas'))
+
+		SessionView = require("./js/SessionView")(Launchpad, paper.view)
 
 		ScaleSequencePattern = require("./js/ScaleSequencePattern")(Tone, Launchpad)
 		BouncePattern = require("./js/BouncePattern")(Tone, Launchpad)
@@ -43,13 +45,12 @@ WebMidi.enable((err) => {
 		// Launchpad.setPad(9, 8, "flash", 1)
 
 		// set up Paper canvas
-		paper.setup(document.getElementById('mainCanvas'))
 		paper.project.currentStyle = {
 			fontFamily: 'Dosis',
 			fontSize: '20',
 		}
 
-		// let kit = new ScaleSequencePattern(paper.view)
+		// let kit = new KitSequencePattern(paper.view)
 		// kit.activate()
 
 		let sessionView = new SessionView(paper.view)

@@ -1,11 +1,11 @@
-module.exports = (Launchpad) => {
-	let View = require("./View")(Launchpad)
+module.exports = (Launchpad, pView) => {
+	let View = require("./View")(Launchpad, pView)
 	let Selector = require("./Selector")(Launchpad)
 	let paper = require("paper")
 
 	class SessionView extends View {
-		constructor(pView) {
-			super(pView)
+		constructor() {
+			super()
 
 			this.patterns = []
 

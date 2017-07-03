@@ -1,11 +1,11 @@
 let remote = require("electron").remote
 
-module.exports = (Tone, Launchpad) => {
-	let Pattern = require("./Pattern")(Launchpad)
+module.exports = (Tone, Launchpad, pView) => {
+	let Pattern = require("./Pattern")(Launchpad, pView)
 
 	class KitSequence extends Pattern {
-		constructor(pView) {
-			super(pView)
+		constructor() {
+			super()
 
 			// TODO choose this via modal
 			let kitName = '808'

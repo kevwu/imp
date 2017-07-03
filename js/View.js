@@ -1,8 +1,6 @@
-module.exports = (Launchpad) => {
+module.exports = (Launchpad, pView) => {
 	class View {
-		constructor(pView) {
-			this.pView = pView
-
+		constructor() {
 			this.onHandler = null
 			this.offHandler = null
 		}

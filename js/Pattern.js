@@ -1,10 +1,10 @@
-module.exports = (Launchpad) => {
-	let View = require("./View.js")(Launchpad)
+module.exports = (Launchpad, pView) => {
+	let View = require("./View.js")(Launchpad, pView)
 
 	class Pattern extends View {
 		// when pattern is added
-		constructor(pView) {
-			super(pView)
+		constructor() {
+			super()
 			this.instrument = null
 		}
 

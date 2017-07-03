@@ -1,11 +1,11 @@
 let teoria = require("teoria")
 
-module.exports = (Tone, Launchpad) => {
-	let Pattern = require("./Pattern")(Launchpad)
+module.exports = (Tone, Launchpad, pView) => {
+	let Pattern = require("./Pattern")(Launchpad, pView)
 
 	class ScaleSequence extends Pattern {
-		constructor(pView) {
-			super(pView)
+		constructor() {
+			super()
 			// synth must support polyphony
 			this.instrument = new Tone.PolySynth(6, Tone.Synth).toMaster()
 			this.sequence = []
