@@ -57,8 +57,7 @@ module.exports = (Tone, Launchpad, pView) => {
 
 					console.log(this.patterns[patternKey])
 
-					this.patterns[patternKey].activate()
-					this.deactivate()
+					this.patterns[patternKey].activate({}, true)
 				}
 			)
 			// must be set after initialization
@@ -74,17 +73,11 @@ module.exports = (Tone, Launchpad, pView) => {
 
 				if (patternKey in this.patterns) {
 					// load into pattern
-					this.deactivate()
 					this.patterns[patternKey].activate()
 				} else {
 					// new pattern
-					if(this.patternTypeSelector.active) {
-						Launchpad.setPad(row, col, "off")
-						this.patternTypeSelector.deactivate()
-					} else {
 						Launchpad.setPad(row, col, "pulse", 60)
-						this.patternTypeSelector.activate({patternKey: patternKey})
-					}
+						this.patternTypeSelector.activate({patternKey: patternKey}, false)
 				}
 			}
 
@@ -100,11 +93,6 @@ module.exports = (Tone, Launchpad, pView) => {
 				fontSize: 22,
 				justification: 'center',
 			})
-		}
-
-		deactivate() {
-			super.deactivate()
-			this.patternTypeSelector.deactivate()
 		}
 	}
 

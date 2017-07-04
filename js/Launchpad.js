@@ -36,6 +36,9 @@ class Launchpad {
 			}
 		})
 
+		this.globalOnHandler = (row, col) => {}
+		this.globalOffHandler = (row, col) => {}
+
 		this.clearAll()
 	}
 
@@ -107,6 +110,8 @@ class Launchpad {
 				handler(row, col)
 			}
 		}
+
+		this.globalOnHandler(row, col)
 	}
 
 	_handleNoteOff(row, col) {
@@ -116,6 +121,8 @@ class Launchpad {
 				handler(row, col)
 			}
 		}
+
+		this.globalOffHandler(row, col)
 	}
 
 	on(eventType, handler) {
@@ -136,7 +143,12 @@ class Launchpad {
 		} else {
 			throw "Invalid event: " + eventType
 		}
+	}
 
+	// removes all non-global handlers
+	unbind() {
+		this.noteOnHandlers = []
+		this.noteOffHandlers = []
 	}
 }
 

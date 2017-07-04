@@ -1,4 +1,5 @@
 let remote = require("electron").remote
+let paper = require("paper")
 
 module.exports = (Tone, Launchpad, pView) => {
 	let Pattern = require("./Pattern")(Launchpad, pView)
@@ -35,6 +36,11 @@ module.exports = (Tone, Launchpad, pView) => {
 			this.position.measureOffset = 0
 			this.position.noteZoom = 8
 			this.position.sampleOffset = 0
+
+			new paper.PointText({
+				position: [160, 20],
+				content: 'Kit sequence pattern'
+			})
 
 			this.padOnHandler = (row, col) => {
 				if (row === 9) {

@@ -55,15 +55,9 @@ module.exports = (Launchpad, pView) => {
 			}
 		}
 
-		activate(context) {
-			super.activate()
+		activate(context, hideOther = false) {
+			super.activate(context, hideOther)
 			this.pointText.visible = true
-			this.context = context
-		}
-
-		deactivate() {
-			super.deactivate()
-			this.pointText.visible = false
 		}
 	}
 

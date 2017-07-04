@@ -23,9 +23,6 @@ WebMidi.enable((err) => {
 		SessionView = require("./js/SessionView")(Tone, Launchpad, paper.view)
 
 		Tone.Transport.bpm.value = 120
-		// Tone.Transport.loop = true
-		// Tone.Transport.loopStart = 0
-		// Tone.Transport.loopEnd = "1m"
 
 		// midi clock to synchronize pulse animation
 		// I'm 90% sure the resulting flash isn't actually on-beat
@@ -50,11 +47,15 @@ WebMidi.enable((err) => {
 			fontSize: 14
 		})
 
-		// let kit = new KitSequencePattern(paper.view)
-		// kit.activate()
-
 		let sessionView = new SessionView(paper.view)
 		sessionView.activate()
+
+		Launchpad.globalOnHandler = (row, col) => {
+			// session button
+			if(row === 9 && col === 5) {
+				sessionView.activate()
+			}
+		}
 	}
 }, true)
 
