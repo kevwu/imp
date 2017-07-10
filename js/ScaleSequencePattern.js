@@ -1,4 +1,5 @@
 let teoria = require("teoria")
+let paper = require("paper")
 
 module.exports = (Tone, Launchpad, pView) => {
 	let Pattern = require("./Pattern")(Launchpad, pView)
@@ -116,18 +117,16 @@ module.exports = (Tone, Launchpad, pView) => {
 			}
 		}
 
-		// draw scene to Launchpad from scratch
 		render() {
-			console.log("Render")
-			console.log("Octave: " + this.baseNote.octave())
-			console.log("Measure: " + this.position.measureOffset)
+			new paper.PointText({
+				point: [160, 20],
+				content: 'Scale sequence',
+				fontSize: 22,
+				justification: 'center',
+			})
 
 			// turn off the grid
-			for (let i = 1; i <= 8; i += 1) {
-				for (let j = 1; j <= 8; j += 1) {
-					Launchpad.setPad(i, j, "off")
-				}
-			}
+			Launchpad.clearGrid()
 
 
 			// get all events

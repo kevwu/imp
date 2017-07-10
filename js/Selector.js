@@ -5,21 +5,11 @@ module.exports = (Launchpad, pView) => {
 	let View = require("./View")(Launchpad, pView)
 
 	class Selector extends View {
-		constructor(choices, pGroup, onSelect) {
+		constructor(choices, onSelect) {
 			super()
 
 			this.choices = choices
 			this.currentChoiceKey = 0
-			this.pGroup = pGroup
-
-			this.pGroup.children.push(new paper.PointText({
-				content: choices[0].label,
-				justification: 'center',
-				visible: false,
-			}))
-			this.pointText = this.pGroup.children[0]
-
-			this.pointText.content = choices[0].label
 
 			this.onSelect = onSelect
 
@@ -55,8 +45,22 @@ module.exports = (Launchpad, pView) => {
 			}
 		}
 
-		activate(context, hideOther = false) {
-			super.activate(context, hideOther)
+		activate(context, hideOthers = false) {
+			super.activate(context, hideOthers)
+
+			this.pLayer.removeChildren()
+
+			this.pGroup = new paper.Group()
+
+			this.pGroup.children.push(new paper.PointText({
+				content: this.choices[0].label,
+				justification: 'center',
+				visible: false,
+			}))
+			this.pointText = this.pGroup.children[0]
+
+			this.pointText.content = this.choices[0].label
+
 			this.pointText.visible = true
 		}
 	}

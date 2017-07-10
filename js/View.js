@@ -11,13 +11,19 @@ module.exports = (Launchpad, pView) => {
 
 		// when pView is switched into
 		// bind event handlers, render previous state to Launchpad, etc
-		activate(context = {}, hideOther = true) {
+		activate(context = {}, hideOthers = true) {
 			// deactivate other patterns
 
 			// give this view its own layer and switch into it
-			if(hideOther) {
-				paper.project.activeLayer.visible = false
+			if(hideOthers) {
+				console.log("hiding")
+				paper.project.layers.forEach((layer, ind) => {
+					if(layer != this.pLayer && ind !== 0) {
+						layer.visible = false
+					}
+				})
 			}
+
 			this.pLayer.visible = true
 			this.pLayer.activate()
 
@@ -36,7 +42,7 @@ module.exports = (Launchpad, pView) => {
 
 		// (re)draw everything, both to Paper and Launchpad as necessary
 		render() {
-
+			this.pLayer.removeChildren()
 		}
 	}
 

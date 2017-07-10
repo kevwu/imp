@@ -20,10 +20,10 @@ module.exports = (Tone, Launchpad, pView) => {
 			})
 			this.numSamples = kitSamples.length
 
-			this.player = new Tone.MultiPlayer(kitSamples, () => {
+			this.tonePlayer = new Tone.MultiPlayer(kitSamples, () => {
 				this.part = new Tone.Part((time, data) => {
 					for (let sample in data.samples) {
-						this.player.start(sample, time)
+						this.tonePlayer.start(sample, time)
 					}
 				})
 				this.part.loop = true
@@ -36,11 +36,6 @@ module.exports = (Tone, Launchpad, pView) => {
 			this.position.measureOffset = 0
 			this.position.noteZoom = 8
 			this.position.sampleOffset = 0
-
-			new paper.PointText({
-				position: [160, 20],
-				content: 'Kit sequence pattern'
-			})
 
 			this.padOnHandler = (row, col) => {
 				if (row === 9) {
@@ -125,6 +120,13 @@ module.exports = (Tone, Launchpad, pView) => {
 
 		// draw scene to Launchpad from scratch
 		render() {
+			super.render()
+
+			new paper.PointText({
+				position: [160, 20],
+				content: 'Kit sequence pattern'
+			})
+
 			// turn off the grid
 			Launchpad.clearGrid()
 

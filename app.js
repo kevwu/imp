@@ -48,12 +48,12 @@ WebMidi.enable((err) => {
 		})
 
 		let sessionView = new SessionView(paper.view)
-		sessionView.activate()
+		sessionView.activate({}, false)
 
 		Launchpad.globalOnHandler = (row, col) => {
 			// session button
 			if(row === 9 && col === 5) {
-				sessionView.activate()
+				sessionView.activate({}, true)
 			}
 		}
 	}

@@ -32,16 +32,11 @@ module.exports = (Tone, Launchpad, pView) => {
 						value: "bounce"
 					},
 				],
-				new paper.Group({
-					style: {
-						fillColor: '#000'
-					},
-				}),
 				(choice, context) => {
 					console.log(choice)
 
 					let patternKey = context.patternKey
-					switch(choice.value) {
+					switch (choice.value) {
 						case "kitSequence":
 							this.patterns[patternKey] = new KitSequencePattern()
 							break
@@ -55,13 +50,13 @@ module.exports = (Tone, Launchpad, pView) => {
 							console.log("fatal error")
 					}
 
+					console.log("Created pattern:")
 					console.log(this.patterns[patternKey])
 
 					this.patterns[patternKey].activate({}, true)
 				}
 			)
 			// must be set after initialization
-			this.patternTypeSelector.pGroup.position = pView.center
 
 			this.padOnHandler = (row, col) => {
 				if (row === 9) {
@@ -73,11 +68,13 @@ module.exports = (Tone, Launchpad, pView) => {
 
 				if (patternKey in this.patterns) {
 					// load into pattern
+					console.log("Loading existing pattern")
 					this.patterns[patternKey].activate()
 				} else {
 					// new pattern
-						Launchpad.setPad(row, col, "pulse", 60)
-						this.patternTypeSelector.activate({patternKey: patternKey}, false)
+					Launchpad.setPad(row, col, "pulse", 60)
+					this.patternTypeSelector.activate({patternKey: patternKey}, false)
+					this.patternTypeSelector.pGroup.position = pView.center
 				}
 			}
 
@@ -87,6 +84,9 @@ module.exports = (Tone, Launchpad, pView) => {
 		}
 
 		render() {
+			super.render()
+			Launchpad.clearGrid()
+
 			new paper.PointText({
 				point: [160, 20],
 				content: 'SESSION VIEW',
