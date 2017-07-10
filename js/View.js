@@ -16,7 +16,6 @@ module.exports = (Launchpad, pView) => {
 
 			// give this view its own layer and switch into it
 			if(hideOthers) {
-				console.log("hiding")
 				paper.project.layers.forEach((layer, ind) => {
 					if(layer != this.pLayer && ind !== 0) {
 						layer.visible = false

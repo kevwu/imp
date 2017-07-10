@@ -9,7 +9,6 @@ module.exports = (Tone, Launchpad, pView) => {
 			super()
 			// synth must support polyphony
 			this.instrument = new Tone.PolySynth(6, Tone.Synth).toMaster()
-			this.sequence = []
 
 			// default time to hold the note before releasing. Can be overriden
 			this.holdTime = "16n"
@@ -118,6 +117,8 @@ module.exports = (Tone, Launchpad, pView) => {
 		}
 
 		render() {
+			super.render()
+
 			new paper.PointText({
 				point: [160, 20],
 				content: 'Scale sequence',

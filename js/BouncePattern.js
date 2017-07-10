@@ -1,7 +1,7 @@
 module.exports = (Tone, Launchpad, pView) => {
 	let Pattern = require("./Pattern")(Launchpad, pView)
 
-	class BouncePattern extends Pattern {
+	class Bouncer extends Pattern {
 
 		constructor() {
 			super()
@@ -72,5 +72,5 @@ module.exports = (Tone, Launchpad, pView) => {
 		}
 	}
 
-	return BouncePattern
+	return Bouncer
 }

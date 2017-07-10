@@ -30,12 +30,16 @@ module.exports = (Launchpad, pView) => {
 				if(col === 2) {
 					this.currentChoiceKey = (this.currentChoiceKey - 1 >= 0) ? this.currentChoiceKey - 1 : this.choices.length -1
 				}
+
+				// left arrow (cancel)
+				if(col === 3) {
+					this.context.origin.activate()
+				}
+
 				// right arrow
 				if(col === 4) {
 					this.onSelect(this.choices[this.currentChoiceKey], this.context)
 				}
-
-				console.log(this.choices[this.currentChoiceKey])
 
 				this.pointText.content = this.choices[this.currentChoiceKey].label
 			}

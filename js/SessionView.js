@@ -4,7 +4,7 @@ module.exports = (Tone, Launchpad, pView) => {
 	let paper = require("paper")
 
 	let ScaleSequencePattern = require("./ScaleSequencePattern")(Tone, Launchpad)
-	let BouncePattern = require("./BouncePattern")(Tone, Launchpad)
+	let Bouncer = require("./BouncePattern")(Tone, Launchpad)
 	let KitSequencePattern = require("./KitSequencePattern")(Tone, Launchpad)
 
 	class SessionView extends View {
@@ -33,8 +33,6 @@ module.exports = (Tone, Launchpad, pView) => {
 					},
 				],
 				(choice, context) => {
-					console.log(choice)
-
 					let patternKey = context.patternKey
 					switch (choice.value) {
 						case "kitSequence":
@@ -44,19 +42,15 @@ module.exports = (Tone, Launchpad, pView) => {
 							this.patterns[patternKey] = new ScaleSequencePattern()
 							break
 						case "bounce":
-							this.patterns[patternKey] = new BouncePattern()
+							this.patterns[patternKey] = new Bouncer()
 							break
 						default:
 							console.log("fatal error")
 					}
 
-					console.log("Created pattern:")
-					console.log(this.patterns[patternKey])
-
 					this.patterns[patternKey].activate({}, true)
 				}
 			)
-			// must be set after initialization
 
 			this.padOnHandler = (row, col) => {
 				if (row === 9) {
@@ -64,16 +58,14 @@ module.exports = (Tone, Launchpad, pView) => {
 				}
 
 				let patternKey = ((row - 1) * 8) + col
-				console.log(patternKey)
 
 				if (patternKey in this.patterns) {
 					// load into pattern
-					console.log("Loading existing pattern")
 					this.patterns[patternKey].activate()
 				} else {
 					// new pattern
 					Launchpad.setPad(row, col, "pulse", 60)
-					this.patternTypeSelector.activate({patternKey: patternKey}, false)
+					this.patternTypeSelector.activate({patternKey: patternKey, origin: this}, false)
 					this.patternTypeSelector.pGroup.position = pView.center
 				}
 			}
@@ -92,6 +84,31 @@ module.exports = (Tone, Launchpad, pView) => {
 				content: 'SESSION VIEW',
 				fontSize: 22,
 				justification: 'center',
+			})
+
+			Object.keys(this.patterns).forEach((key) => {
+				let prow = Math.floor((key -1) / 8) + 1
+				let pcol = key - ((prow - 1) * 8)
+
+				let color
+				switch(this.patterns[key].constructor.name) {
+					case "KitSequence":
+						color = 19
+						break
+					case "ScaleSequence":
+						color = 49
+						break
+					case "Bouncer":
+						color = 29
+						break
+				}
+
+				if(this.patterns[key].part.state === "started") {
+					Launchpad.setPad(prow, pcol, "flash", color)
+				} else {
+					Launchpad.setPad(prow, pcol, "on", color)
+				}
+
 			})
 		}
 	}
